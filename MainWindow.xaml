@@ -7,7 +7,21 @@
         mc:Ignorable="d"
         Title="Computer-Support-Info" Height="450" Width="800" SizeToContent="WidthAndHeight" WindowStartupLocation="CenterScreen" MinWidth="800" MinHeight="450">
     <DockPanel Background="#FFD8E8E5">
-        <DataGrid x:Name="SupportInfosGrid" Height="Auto" ItemsSource="{Binding}" Loaded="SupportInfosGrid_Loaded" ColumnWidth="SizeToCells" Margin="5,5,5,5" DockPanel.Dock="Top"/>
+        <Menu Height="Auto" VerticalAlignment="Top" DockPanel.Dock="Top">
+            <MenuItem Header="Aktionen">
+                <MenuItem Header="Speedtest" Click="MenuItem_Click"/>
+            </MenuItem>
+
+        </Menu>
+
+        <DataGrid x:Name="SupportInfosGrid" Height="Auto" ItemsSource="{Binding}"
+                  
+                  Loaded="SupportInfosGrid_Loaded" ColumnWidth="SizeToCells" Margin="5,5,5,5" DockPanel.Dock="Top" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
+            <DataGrid.HorizontalGridLinesBrush>
+                <SolidColorBrush Color="#25000000"/>
+            </DataGrid.HorizontalGridLinesBrush>
+        </DataGrid>
         <Button x:Name="BtnExit" Content="Exit" Margin="25" Click="BtnExit_Click" FontSize="16" Width="692" DockPanel.Dock="Bottom" VerticalAlignment="Bottom" />
+        
     </DockPanel>
 </Window>

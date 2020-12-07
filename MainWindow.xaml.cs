@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management;
@@ -17,6 +18,10 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+
+using Microsoft.WindowsAPICodePack.Shell;
+using Microsoft.WindowsAPICodePack.Shell.PropertySystem;
+using Path = System.IO.Path;
 
 namespace Computer_Support_Info
 {
@@ -150,9 +155,65 @@ namespace Computer_Support_Info
 
             SupportInfoList.Add(new SupportInfoElement() { Name = "Gerät", Value = $"{manufacturer} {model}, Seriennr.: {serial}" });
 
+            // CPU
+
+            string cpu = string.Empty;
+
+            try
+            {
 
 
+                ManagementClass cs = new ManagementClass("win32_processor");
+                ManagementObjectCollection moc = cs.GetInstances();
+                if (moc.Count != 0)
+                {
+                    foreach (ManagementObject MO in cs.GetInstances())
+                    {
+                        cpu = MO.Properties["Name"].Value.ToString();
+                   }
+                }
+            }
+            catch { }
 
+            SupportInfoList.Add(new SupportInfoElement() { Name = "CPU", Value = cpu });
+
+            // RAM
+
+            double ram_gb = 0L;
+
+            try
+            {
+
+
+                ManagementClass cs = new ManagementClass("Win32_OperatingSystem");
+                ManagementObjectCollection moc = cs.GetInstances();
+                if (moc.Count != 0)
+                {
+                    foreach (ManagementObject MO in cs.GetInstances())
+                    {
+                        ram_gb = double.Parse(MO.Properties["TotalVisibleMemorySize"].Value.ToString()) / 1024.0 / 1024.0;
+                    }
+                }
+            }
+            catch { }
+
+            SupportInfoList.Add(new SupportInfoElement() { Name = "RAM", Value = ram_gb.ToString("#.0") + " GB" });
+           
+
+
+            // Bitlocker
+
+            var bitLocker = string.Empty;
+
+            IShellProperty prop = ShellObject.FromParsingName("C:").Properties.GetProperty("System.Volume.BitLockerProtection");
+            int? bitLockerProtectionStatus = (prop as ShellProperty<int?>).Value;
+
+            if (bitLockerProtectionStatus.HasValue && (bitLockerProtectionStatus == 1 || bitLockerProtectionStatus == 3 || bitLockerProtectionStatus == 5))
+                bitLocker = "Ein";
+            else
+                bitLocker = "Aus";
+
+            if (!string.IsNullOrWhiteSpace(bitLocker)) SupportInfoList.Add(new SupportInfoElement() { Name = "Bitlocker (C:)", Value = bitLocker });
 
 
             (sender as DataGrid).ItemsSource = SupportInfoList;
@@ -163,5 +224,43 @@ namespace Computer_Support_Info
             Application.Current.Shutdown();
         }
 
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            // Speedtest
+
+            try
+            {
+                var full_exe_path = System.Reflection.Assembly.GetEntryAssembly().Location;
+                var folder = Path.GetDirectoryName(full_exe_path);
+                var full_speed_test_name = Path.Combine(folder, Properties.Settings.Default.speedtest_exe_name);
+
+                ProcessStartInfo psi = new ProcessStartInfo()
+                {
+                    FileName = full_speed_test_name,
+                    UseShellExecute = false,
+                    LoadUserProfile = false,
+                    Arguments = Properties.Settings.Default.speedtest_parameters,
+                    RedirectStandardOutput = true,
+                    CreateNoWindow = true
+                };
+
+                Process p = new Process() { StartInfo = psi };
+
+                Mouse.OverrideCursor = Cursors.Wait;
+
+                p.Start();
+                p.WaitForExit(30000);
+
+                Mouse.OverrideCursor = null;
+
+                string output = p.StandardOutput.ReadToEnd();
+
+                MessageBox.Show(output, "Speedtest", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch
+            {
+                MessageBox.Show("Fehler beim Speedtest!", "Speedtest", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
     }
 }
