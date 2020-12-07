@@ -23,6 +23,8 @@ using Microsoft.WindowsAPICodePack.Shell;
 using Microsoft.WindowsAPICodePack.Shell.PropertySystem;
 using Path = System.IO.Path;
 
+using AForge.Video.DirectShow;
+
 namespace Computer_Support_Info
 {
     /// <summary>
@@ -139,15 +141,15 @@ namespace Computer_Support_Info
             {
                 
 
-                ManagementClass cs = new ManagementClass("win32_computersystemproduct");
+                ManagementClass cs = new ManagementClass("win32_baseboard");
                 ManagementObjectCollection moc = cs.GetInstances();
                 if (moc.Count != 0)
                 {
                     foreach (ManagementObject MO in cs.GetInstances())
                     {
-                        manufacturer = MO.Properties["Vendor"].Value.ToString();
-                        model = MO.Properties["Name"].Value.ToString();
-                        serial = MO.Properties["IdentifyingNumber"].Value.ToString();
+                        manufacturer = MO.Properties["Manufacturer"].Value.ToString();
+                        model = MO.Properties["Product"].Value.ToString();
+                        serial = MO.Properties["SerialNumber"].Value.ToString();
                     }
                 }
             }
@@ -177,6 +179,32 @@ namespace Computer_Support_Info
 
             SupportInfoList.Add(new SupportInfoElement() { Name = "CPU", Value = cpu });
 
+            // Firmware
+
+            string bios_manufacturer = string.Empty;
+            string bios_version = string.Empty;
+            DateTime bios_datetime = DateTime.MinValue;
+
+            try
+            {
+
+
+                ManagementClass cs = new ManagementClass("win32_bios");
+                ManagementObjectCollection moc = cs.GetInstances();
+                if (moc.Count != 0)
+                {
+                    foreach (ManagementObject MO in cs.GetInstances())
+                    {
+                        bios_manufacturer = MO.Properties["Manufacturer"].Value.ToString();
+                        bios_version = MO.Properties["SMBIOSBIOSVersion"].Value.ToString();
+                        bios_datetime = ManagementDateTimeConverter.ToDateTime(MO.Properties["ReleaseDate"].Value.ToString()); 
+                    }
+                }
+            }
+            catch { }
+
+            SupportInfoList.Add(new SupportInfoElement() { Name = "Firmware", Value = $"{bios_manufacturer} {bios_version}, {bios_datetime.ToString("dd.MM.yyyy")}" });
+
             // RAM
 
             double ram_gb = 0L;
@@ -198,7 +226,55 @@ namespace Computer_Support_Info
             catch { }
 
             SupportInfoList.Add(new SupportInfoElement() { Name = "RAM", Value = ram_gb.ToString("#.0") + " GB" });
-           
+
+            // Webcam
+
+            string WebCamInfo = string.Empty;
+
+            FilterInfoCollection videoInputCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+
+            if ((videoInputCollection != null) && (videoInputCollection.Count > 0))
+            {
+                foreach (FilterInfo videoDevice in videoInputCollection)
+                {
+                    WebCamInfo += $"Webcam: {videoDevice.Name}\n";
+                }
+
+                SupportInfoList.Add(new SupportInfoElement() { Name = "Webcam", Value = WebCamInfo });
+            }
+
+            // Grafik
+
+            string name = string.Empty;
+            string driver = string.Empty;
+
+            string videoInfo = string.Empty;
+
+            try
+            {
+
+
+                ManagementClass cs = new ManagementClass("win32_videocontroller");
+                ManagementObjectCollection moc = cs.GetInstances();
+                if (moc.Count != 0)
+                {
+                    foreach (ManagementObject MO in cs.GetInstances())
+                    {
+                        name = MO.Properties["Name"].Value.ToString();
+                        driver = MO.Properties["DriverVersion"].Value.ToString();
+
+                        videoInfo += $"{name}, Treiber-Version: {driver}\n";
+                    }
+
+                    
+
+                }
+
+                if (!string.IsNullOrWhiteSpace(videoInfo)) SupportInfoList.Add(new SupportInfoElement() { Name = "Grafikkarte", Value = videoInfo });
+            }
+            catch { }
+
+            
 
 
             // Bitlocker
@@ -214,6 +290,9 @@ namespace Computer_Support_Info
                 bitLocker = "Aus";
 
             if (!string.IsNullOrWhiteSpace(bitLocker)) SupportInfoList.Add(new SupportInfoElement() { Name = "Bitlocker (C:)", Value = bitLocker });
+
+
+            
 
 
             (sender as DataGrid).ItemsSource = SupportInfoList;
