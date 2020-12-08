@@ -274,7 +274,37 @@ namespace Computer_Support_Info
             }
             catch { }
 
-            
+            // Monitor
+
+
+            string monitorInfo = string.Empty;
+
+            try
+            {
+
+
+                ManagementClass cs = new ManagementClass("win32_desktopmonitor");
+                ManagementObjectCollection moc = cs.GetInstances();
+                if (moc.Count != 0)
+                {
+                    foreach (ManagementObject MO in cs.GetInstances())
+                    {
+                        string monitor_manufacturer = string.Empty;
+                        string monitor_type = string.Empty;
+
+                        monitor_manufacturer = MO.Properties["MonitorManufacturer"].Value != null ? MO.Properties["MonitorManufacturer"].Value.ToString() : string.Empty;
+                        monitor_type = MO.Properties["MonitorType"].Value != null ? MO.Properties["MonitorType"].Value.ToString() : string.Empty;
+
+                        monitorInfo += $"{monitor_manufacturer} {monitor_type}\n";
+                    }
+
+
+
+                }
+
+                if (!string.IsNullOrWhiteSpace(monitorInfo)) SupportInfoList.Add(new SupportInfoElement() { Name = "Monitor", Value = monitorInfo });
+            }
+            catch { }
 
 
             // Bitlocker
