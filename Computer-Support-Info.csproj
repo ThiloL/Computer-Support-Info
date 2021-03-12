@@ -11,6 +11,7 @@
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <PublishSingleFile>true</PublishSingleFile>
     <ApplicationIcon>MainIcon.ico</ApplicationIcon>
+    <Copyright>2021 | HUK-COBURG | Informatib Betrieb | SM+SV | Thilo Langbein</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,9 +22,12 @@
   <ItemGroup>
     <PackageReference Include="AForge.Video.DirectShow" Version="2.2.5" />
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
+    <PackageReference Include="NAudio" Version="1.10.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Management" />
     <Reference Include="System.Management.Instrumentation" />
   </ItemGroup>

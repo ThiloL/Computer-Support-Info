@@ -5,8 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Computer_Support_Info"
         mc:Ignorable="d"
-        Title="Computer-Support-Info" Height="450" Width="800" SizeToContent="WidthAndHeight" WindowStartupLocation="CenterScreen" MinWidth="800" MinHeight="450">
-    <DockPanel Background="#FFD8E8E5">
+        Title="Computer-Support-Info" Height="450" Width="800" SizeToContent="WidthAndHeight" WindowStartupLocation="CenterScreen" MinWidth="800" MinHeight="450"
+        >
+    <DockPanel x:Name="MainDockPanel" Background="#FFFFA163">
         <Menu Height="Auto" VerticalAlignment="Top" DockPanel.Dock="Top">
             <MenuItem Header="Aktionen">
                 <MenuItem Header="Speedtest" Click="MenuItem_Click"/>
@@ -14,14 +15,28 @@
 
         </Menu>
 
-        <DataGrid x:Name="SupportInfosGrid" Height="Auto" ItemsSource="{Binding}"
-                  
-                  Loaded="SupportInfosGrid_Loaded" ColumnWidth="SizeToCells" Margin="5,5,5,5" DockPanel.Dock="Top" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
+        <DataGrid x:Name="SupportInfosGrid" Height="Auto" ItemsSource="{Binding Path=SupportInfoData}" IsSynchronizedWithCurrentItem="True" AutoGenerateColumns="False"                  
+                   ColumnWidth="SizeToCells" Margin="5,5,5,5" DockPanel.Dock="Top" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Beschreibung" Binding="{Binding Name}" />
+                <DataGridTextColumn Header="Wert" Binding="{Binding Value}" />
+            </DataGrid.Columns>
+            
             <DataGrid.HorizontalGridLinesBrush>
                 <SolidColorBrush Color="#25000000"/>
             </DataGrid.HorizontalGridLinesBrush>
+
+            <DataGrid.Resources>
+                <Style TargetType="{x:Type DataGridRow}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding MakeBold}" Value="True">
+                            <Setter Property="FontWeight" Value="Bold" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.Resources>
         </DataGrid>
-        <Button x:Name="BtnExit" Content="Exit" Margin="25" Click="BtnExit_Click" FontSize="16" Width="692" DockPanel.Dock="Bottom" VerticalAlignment="Bottom" />
+        <Button x:Name="BtnExit" Content="Exit" Margin="25" Click="BtnExit_Click" FontSize="16" Width="692" DockPanel.Dock="Bottom" VerticalAlignment="Bottom" ToolTip="Anwendung beenden" />
         
     </DockPanel>
 </Window>

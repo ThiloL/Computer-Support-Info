@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.DirectoryServices;
+using System.DirectoryServices.AccountManagement;
 using System.IO;
 using System.Linq;
 using System.Management;
@@ -24,6 +26,8 @@ using Microsoft.WindowsAPICodePack.Shell.PropertySystem;
 using Path = System.IO.Path;
 
 using AForge.Video.DirectShow;
+using NAudio.Wave;
+using System.ComponentModel;
 
 namespace Computer_Support_Info
 {
@@ -32,22 +36,99 @@ namespace Computer_Support_Info
     /// </summary>
     public partial class MainWindow : Window
     {
-        public List<SupportInfoElement> SupportInfoList;
+        private BackgroundWorker background_worker = new BackgroundWorker();
+            
+        //public List<SupportInfoElement> SupportInfoList;
+
+        public ViewModel vm;
 
         public MainWindow()
         {
             InitializeComponent();
-            SupportInfoList = new List<SupportInfoElement>();
+
+            vm = new ViewModel();
+            DataContext = vm;
+
+            background_worker.WorkerReportsProgress = false;
+            background_worker.DoWork += Background_worker_DoWork;
+            background_worker.RunWorkerCompleted += Background_worker_RunWorkerCompleted;
+
+            Mouse.OverrideCursor = Cursors.Wait;
+
+            background_worker.RunWorkerAsync();
+
+            //return;
+
+            //SupportInfoList = new List<SupportInfoElement>();
+
+            //SupportInfoData = new ObservableCollection<SupportInfoElement>();
         }
 
-        private void SupportInfosGrid_Loaded(object sender, RoutedEventArgs e)
+        private void Background_worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            MainDockPanel.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFD8E8E5"));
+            Mouse.OverrideCursor = null;
+
+            Rect workArea = SystemParameters.WorkArea;
+            this.Left = (workArea.Width - this.Width) / 2 + workArea.Left;
+            this.Top = (workArea.Height - this.Height) / 2 + workArea.Top;
+        }
+
+        private void Background_worker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            LoadData();
+        }
+
+        private void AddGridItem(SupportInfoElement Item)
+        {
+            Application.Current.Dispatcher.Invoke
+                (
+                    System.Windows.Threading.DispatcherPriority.Background,
+                    new Action(() =>
+                    {
+                        vm.AddItem(Item);
+                    }
+                    )
+                );
+        }
+
+        private void LoadData()
         {
             var user = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+            AddGridItem(new SupportInfoElement() { Name = "Benutzername", Value = user });
 
-            SupportInfoList = new List<SupportInfoElement>();
+            bool CurrentUserIsmemberOfAdminGroup = false;
+            try
+            {
+                using (PrincipalContext pc = new PrincipalContext(ContextType.Machine))
+                {
+                    UserPrincipal up = UserPrincipal.FindByIdentity(pc, IdentityType.Sid, System.Security.Principal.WindowsIdentity.GetCurrent().User.Value);
+                    if (up != null)
+                    {
+                        var groups_of_user = up.GetGroups();
+                        if (groups_of_user != null)
+                        {
+                            foreach (Principal gp in groups_of_user)
+                            {
+                                if (gp.Sid.IsWellKnown(System.Security.Principal.WellKnownSidType.BuiltinAdministratorsSid))
+                                {
+                                    CurrentUserIsmemberOfAdminGroup = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
 
-            SupportInfoList.Add(new SupportInfoElement() { Name = "Benutzername", Value = user });
-            SupportInfoList.Add(new SupportInfoElement() { Name = "Computername", Value = Environment.MachineName });
+            //SupportInfoList = new List<SupportInfoElement>();
+
+
+
+            if (CurrentUserIsmemberOfAdminGroup) AddGridItem(new SupportInfoElement() { Name = "Administrative Rechte", Value = "JA", MakeBold = true });
+
+            AddGridItem(new SupportInfoElement() { Name = "Computername", Value = Environment.MachineName });
+
 
             var versionString = (string)Microsoft.Win32.Registry.LocalMachine.OpenSubKey("Software\\Microsoft\\Windows NT\\CurrentVersion")?.GetValue("productName");
             var releaseID = (string)Microsoft.Win32.Registry.LocalMachine.OpenSubKey("Software\\Microsoft\\Windows NT\\CurrentVersion")?.GetValue("ReleaseID");
@@ -56,7 +137,7 @@ namespace Computer_Support_Info
 
             var x64 = Environment.Is64BitOperatingSystem ? "x64" : "x86";
 
-            SupportInfoList.Add(new SupportInfoElement() { Name = "Windows", Value = $"{versionString}, Build: {currentBuildNumber}, Version: {releaseID}, Patch-Level: {ubr}, Architektur: {x64}" });
+            AddGridItem(new SupportInfoElement() { Name = "Windows", Value = $"{versionString}, Build: {currentBuildNumber}, Version: {releaseID}, Patch-Level: {ubr}, Architektur: {x64}" });
 
             string drive_string = string.Empty;
 
@@ -73,7 +154,7 @@ namespace Computer_Support_Info
 
                 if (!string.IsNullOrEmpty(drive_string))
                 {
-                    SupportInfoList.Add(new SupportInfoElement() { Name = "Laufwerke", Value = drive_string });
+                    AddGridItem(new SupportInfoElement() { Name = "Laufwerke", Value = drive_string });
 
                 }
             }
@@ -111,7 +192,7 @@ namespace Computer_Support_Info
 
                 }
 
-                if (!string.IsNullOrEmpty(ip)) SupportInfoList.Add(new SupportInfoElement() { Name = "Netzwerk", Value = ip });
+                if (!string.IsNullOrEmpty(ip)) AddGridItem(new SupportInfoElement() { Name = "Netzwerk", Value = ip });
             }
             catch { }
 
@@ -126,7 +207,7 @@ namespace Computer_Support_Info
                 var ping_result = pr.Status.ToString();
                 var ping_ms = pr.RoundtripTime.ToString();
 
-                SupportInfoList.Add(new SupportInfoElement() { Name = "Ping (8.8.8.8)", Value = $"Ergebnis: {ping_result}, {ping_ms} ms" });
+                AddGridItem(new SupportInfoElement() { Name = "Ping (8.8.8.8)", Value = $"Ergebnis: {ping_result}, {ping_ms} ms" });
 
             }
             catch { }
@@ -155,7 +236,7 @@ namespace Computer_Support_Info
             }
             catch { }
 
-            SupportInfoList.Add(new SupportInfoElement() { Name = "Gerät", Value = $"{manufacturer} {model}, Seriennr.: {serial}" });
+            AddGridItem(new SupportInfoElement() { Name = "Gerät", Value = $"{manufacturer} {model}, Seriennr.: {serial}" });
 
             // CPU
 
@@ -177,7 +258,7 @@ namespace Computer_Support_Info
             }
             catch { }
 
-            SupportInfoList.Add(new SupportInfoElement() { Name = "CPU", Value = cpu });
+            AddGridItem(new SupportInfoElement() { Name = "CPU", Value = cpu });
 
             // Firmware
 
@@ -203,7 +284,7 @@ namespace Computer_Support_Info
             }
             catch { }
 
-            SupportInfoList.Add(new SupportInfoElement() { Name = "Firmware", Value = $"{bios_manufacturer} {bios_version}, {bios_datetime.ToString("dd.MM.yyyy")}" });
+            AddGridItem(new SupportInfoElement() { Name = "Firmware", Value = $"{bios_manufacturer} {bios_version}, {bios_datetime.ToString("dd.MM.yyyy")}" });
 
             // RAM
 
@@ -225,7 +306,7 @@ namespace Computer_Support_Info
             }
             catch { }
 
-            SupportInfoList.Add(new SupportInfoElement() { Name = "RAM", Value = ram_gb.ToString("#.0") + " GB" });
+            AddGridItem(new SupportInfoElement() { Name = "RAM", Value = ram_gb.ToString("#.0") + " GB" });
 
             // Webcam
 
@@ -240,8 +321,53 @@ namespace Computer_Support_Info
                     WebCamInfo += $"Webcam: {videoDevice.Name}\n";
                 }
 
-                SupportInfoList.Add(new SupportInfoElement() { Name = "Webcam", Value = WebCamInfo });
+                AddGridItem(new SupportInfoElement() { Name = "Webcam", Value = WebCamInfo });
             }
+
+            // Audio
+
+            string AudioOutInfo = string.Empty;
+
+
+            try
+            {
+                for (int i = -1; i < WaveOut.DeviceCount; i++)
+                {
+                    var c = WaveOut.GetCapabilities(i);
+                    AudioOutInfo += c.ProductName + "\n";
+                }
+
+                AddGridItem(new SupportInfoElement() { Name = "Audio (Out)", Value = AudioOutInfo });
+            } 
+            catch { }
+
+            string AudioInInfo = string.Empty;
+
+            try
+            {
+                for (int i = -1; i < WaveIn.DeviceCount; i++)
+                {
+                    var c = WaveIn.GetCapabilities(i);
+                    AudioInInfo += c.ProductName + "\n";
+                }
+
+                AddGridItem(new SupportInfoElement() { Name = "Audio (In)", Value = AudioInInfo });
+            }
+            catch { }
+
+
+
+            //FilterInfoCollection audioCollection = new FilterInfoCollection(FilterCategory.AudioInputDevice);
+
+            //if ((audioCollection != null) && (audioCollection.Count > 0))
+            //{
+            //    foreach (FilterInfo audioDevice in audioCollection)
+            //    {
+            //        AudioInfo += $"Audio: {audioDevice.Name}\n";
+            //    }
+
+            //    SupportInfoList.Add(new SupportInfoElement() { Name = "Audio", Value = AudioInfo });
+            //}
 
             // Grafik
 
@@ -270,7 +396,7 @@ namespace Computer_Support_Info
 
                 }
 
-                if (!string.IsNullOrWhiteSpace(videoInfo)) SupportInfoList.Add(new SupportInfoElement() { Name = "Grafikkarte", Value = videoInfo });
+                if (!string.IsNullOrWhiteSpace(videoInfo)) AddGridItem(new SupportInfoElement() { Name = "Grafikkarte", Value = videoInfo });
             }
             catch { }
 
@@ -302,7 +428,7 @@ namespace Computer_Support_Info
 
                 }
 
-                if (!string.IsNullOrWhiteSpace(monitorInfo)) SupportInfoList.Add(new SupportInfoElement() { Name = "Monitor", Value = monitorInfo });
+                if (!string.IsNullOrWhiteSpace(monitorInfo)) AddGridItem(new SupportInfoElement() { Name = "Monitor", Value = monitorInfo });
             }
             catch { }
 
@@ -319,13 +445,9 @@ namespace Computer_Support_Info
             else
                 bitLocker = "Aus";
 
-            if (!string.IsNullOrWhiteSpace(bitLocker)) SupportInfoList.Add(new SupportInfoElement() { Name = "Bitlocker (C:)", Value = bitLocker });
+            if (!string.IsNullOrWhiteSpace(bitLocker)) AddGridItem(new SupportInfoElement() { Name = "Bitlocker (C:)", Value = bitLocker });
 
 
-            
-
-
-            (sender as DataGrid).ItemsSource = SupportInfoList;
         }
 
         private void BtnExit_Click(object sender, RoutedEventArgs e)
