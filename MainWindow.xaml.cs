@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Management;
 using System.Net.NetworkInformation;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -28,6 +29,7 @@ using Path = System.IO.Path;
 using AForge.Video.DirectShow;
 using NAudio.Wave;
 using System.ComponentModel;
+using System.Reflection;
 
 namespace Computer_Support_Info
 {
@@ -37,14 +39,13 @@ namespace Computer_Support_Info
     public partial class MainWindow : Window
     {
         private BackgroundWorker background_worker = new BackgroundWorker();
-            
-        //public List<SupportInfoElement> SupportInfoList;
-
         public ViewModel vm;
 
         public MainWindow()
         {
             InitializeComponent();
+
+            this.Title += " (" + Assembly.GetExecutingAssembly().GetName().Version.ToString() + ")";
 
             vm = new ViewModel();
             DataContext = vm;
@@ -56,17 +57,11 @@ namespace Computer_Support_Info
             Mouse.OverrideCursor = Cursors.Wait;
 
             background_worker.RunWorkerAsync();
-
-            //return;
-
-            //SupportInfoList = new List<SupportInfoElement>();
-
-            //SupportInfoData = new ObservableCollection<SupportInfoElement>();
         }
 
         private void Background_worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            MainDockPanel.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFD8E8E5"));
+            MainGrid.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFD8E8E5"));
             Mouse.OverrideCursor = null;
 
             Rect workArea = SystemParameters.WorkArea;
@@ -82,37 +77,41 @@ namespace Computer_Support_Info
         private void AddGridItem(SupportInfoElement Item)
         {
             Application.Current.Dispatcher.Invoke
-                (
-                    System.Windows.Threading.DispatcherPriority.Background,
-                    new Action(() =>
-                    {
-                        vm.AddItem(Item);
-                    }
-                    )
-                );
+            (
+                System.Windows.Threading.DispatcherPriority.Background,
+                new Action(() =>
+                {
+                    vm.AddItem(Item);
+                }
+                )
+            );
         }
 
         private void LoadData()
         {
-            var user = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+            var user = WindowsIdentity.GetCurrent().Name;
+            var current_user_sid = WindowsIdentity.GetCurrent().User.Value;
+
             AddGridItem(new SupportInfoElement() { Name = "Benutzername", Value = user });
 
             bool CurrentUserIsmemberOfAdminGroup = false;
             try
             {
-                using (PrincipalContext pc = new PrincipalContext(ContextType.Machine))
+                var administrator_group_sid = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
+
+                using (PrincipalContext pc = new PrincipalContext(ContextType.Machine,Environment.MachineName))
                 {
-                    UserPrincipal up = UserPrincipal.FindByIdentity(pc, IdentityType.Sid, System.Security.Principal.WindowsIdentity.GetCurrent().User.Value);
-                    if (up != null)
+                    GroupPrincipal gp = GroupPrincipal.FindByIdentity(pc, IdentityType.Sid, administrator_group_sid.Value);
+                    if (gp != null)
                     {
-                        var groups_of_user = up.GetGroups();
-                        if (groups_of_user != null)
+                        PrincipalCollection members = gp.Members;
+                        if (members != null)
                         {
-                            foreach (Principal gp in groups_of_user)
+                            foreach (Principal p in members)
                             {
-                                if (gp.Sid.IsWellKnown(System.Security.Principal.WellKnownSidType.BuiltinAdministratorsSid))
+                                if (p.Sid != null)
                                 {
-                                    CurrentUserIsmemberOfAdminGroup = true;
+                                    if (p.Sid.Value.Equals(current_user_sid)) CurrentUserIsmemberOfAdminGroup = true;
                                 }
                             }
                         }
@@ -129,6 +128,7 @@ namespace Computer_Support_Info
 
             AddGridItem(new SupportInfoElement() { Name = "Computername", Value = Environment.MachineName });
 
+            // windows version
 
             var versionString = (string)Microsoft.Win32.Registry.LocalMachine.OpenSubKey("Software\\Microsoft\\Windows NT\\CurrentVersion")?.GetValue("productName");
             var releaseID = (string)Microsoft.Win32.Registry.LocalMachine.OpenSubKey("Software\\Microsoft\\Windows NT\\CurrentVersion")?.GetValue("ReleaseID");
@@ -138,6 +138,138 @@ namespace Computer_Support_Info
             var x64 = Environment.Is64BitOperatingSystem ? "x64" : "x86";
 
             AddGridItem(new SupportInfoElement() { Name = "Windows", Value = $"{versionString}, Build: {currentBuildNumber}, Version: {releaseID}, Patch-Level: {ubr}, Architektur: {x64}" });
+
+            // HW
+
+            string manufacturer = string.Empty;
+            string model = string.Empty;
+            string serial = string.Empty;
+
+            try
+            {
+
+
+                ManagementClass cs = new ManagementClass("win32_baseboard");
+                ManagementObjectCollection moc = cs.GetInstances();
+                if (moc.Count != 0)
+                {
+                    foreach (ManagementObject MO in cs.GetInstances())
+                    {
+                        manufacturer = MO.Properties["Manufacturer"].Value.ToString();
+                        model = MO.Properties["Product"].Value.ToString();
+                        serial = MO.Properties["SerialNumber"].Value.ToString();
+                    }
+                }
+            }
+            catch { }
+
+            AddGridItem(new SupportInfoElement() { Name = "Gerät", Value = $"{manufacturer} {model}, Seriennr.: {serial}" });
+
+            // CPU
+
+            string cpu = string.Empty;
+
+            try
+            {
+
+
+                ManagementClass cs = new ManagementClass("win32_processor");
+                ManagementObjectCollection moc = cs.GetInstances();
+                if (moc.Count != 0)
+                {
+                    foreach (ManagementObject MO in cs.GetInstances())
+                    {
+                        cpu = MO.Properties["Name"].Value.ToString();
+                    }
+                }
+            }
+            catch { }
+
+            AddGridItem(new SupportInfoElement() { Name = "CPU", Value = cpu });
+
+            // Firmware
+
+            string bios_manufacturer = string.Empty;
+            string bios_version = string.Empty;
+            DateTime bios_datetime = DateTime.MinValue;
+
+            try
+            {
+
+
+                ManagementClass cs = new ManagementClass("win32_bios");
+                ManagementObjectCollection moc = cs.GetInstances();
+                if (moc.Count != 0)
+                {
+                    foreach (ManagementObject MO in cs.GetInstances())
+                    {
+                        bios_manufacturer = MO.Properties["Manufacturer"].Value.ToString();
+                        bios_version = MO.Properties["SMBIOSBIOSVersion"].Value.ToString();
+                        bios_datetime = ManagementDateTimeConverter.ToDateTime(MO.Properties["ReleaseDate"].Value.ToString());
+                    }
+                }
+            }
+            catch { }
+
+            AddGridItem(new SupportInfoElement() { Name = "Firmware", Value = $"{bios_manufacturer} {bios_version}, {bios_datetime.ToString("dd.MM.yyyy")}" });
+
+            // RAM
+
+            double ram_gb = 0L;
+
+            try
+            {
+
+
+                ManagementClass cs = new ManagementClass("Win32_OperatingSystem");
+                ManagementObjectCollection moc = cs.GetInstances();
+                if (moc.Count != 0)
+                {
+                    foreach (ManagementObject MO in cs.GetInstances())
+                    {
+                        ram_gb = double.Parse(MO.Properties["TotalVisibleMemorySize"].Value.ToString()) / 1024.0 / 1024.0;
+                    }
+                }
+            }
+            catch { }
+
+            AddGridItem(new SupportInfoElement() { Name = "RAM", Value = ram_gb.ToString("#.0") + " GB" });
+
+
+            // physical disk drives
+
+            string disk_info = string.Empty;
+
+            try
+            {
+                string caption = string.Empty;
+                Int64 size = 0;
+                string size_text = string.Empty;
+
+                ManagementClass cs = new ManagementClass("win32_diskdrive");
+                ManagementObjectCollection moc = cs.GetInstances();
+                if (moc.Count != 0)
+                {
+                    foreach (ManagementObject MO in cs.GetInstances())
+                    {
+                        var type = MO.Properties["MediaType"]?.Value?.ToString();
+
+                        if (type == null) continue;
+                        if (!type.Equals("fixed hard disk media", StringComparison.InvariantCultureIgnoreCase)) continue;
+
+                        caption = MO.Properties["Caption"].Value.ToString();
+                        size = Convert.ToInt64(MO.Properties["Size"].Value);
+                        size_text = (size / 1024.0 / 1024.0 / 1024.0).ToString("F");
+
+                        disk_info += $"{caption}, {size_text} GB\n";
+                    }
+                }
+            }
+            catch { }
+
+            AddGridItem(new SupportInfoElement() { Name = "physikalische Laufwerke", Value = $"{disk_info}" });
+
+            // logical drives
 
             string drive_string = string.Empty;
 
@@ -154,7 +286,7 @@ namespace Computer_Support_Info
 
                 if (!string.IsNullOrEmpty(drive_string))
                 {
-                    AddGridItem(new SupportInfoElement() { Name = "Laufwerke", Value = drive_string });
+                    AddGridItem(new SupportInfoElement() { Name = "logische Laufwerke", Value = drive_string });
 
                 }
             }
@@ -162,6 +294,7 @@ namespace Computer_Support_Info
 
             DriveInfo[] allDrives = DriveInfo.GetDrives();
 
+            // netzwerk info
 
             string net_info = string.Empty;
 
@@ -212,101 +345,6 @@ namespace Computer_Support_Info
             }
             catch { }
 
-            // HW
-
-            string manufacturer = string.Empty;
-            string model = string.Empty;
-            string serial = string.Empty;
-
-            try
-            {
-                
-
-                ManagementClass cs = new ManagementClass("win32_baseboard");
-                ManagementObjectCollection moc = cs.GetInstances();
-                if (moc.Count != 0)
-                {
-                    foreach (ManagementObject MO in cs.GetInstances())
-                    {
-                        manufacturer = MO.Properties["Manufacturer"].Value.ToString();
-                        model = MO.Properties["Product"].Value.ToString();
-                        serial = MO.Properties["SerialNumber"].Value.ToString();
-                    }
-                }
-            }
-            catch { }
-
-            AddGridItem(new SupportInfoElement() { Name = "Gerät", Value = $"{manufacturer} {model}, Seriennr.: {serial}" });
-
-            // CPU
-
-            string cpu = string.Empty;
-
-            try
-            {
-
-
-                ManagementClass cs = new ManagementClass("win32_processor");
-                ManagementObjectCollection moc = cs.GetInstances();
-                if (moc.Count != 0)
-                {
-                    foreach (ManagementObject MO in cs.GetInstances())
-                    {
-                        cpu = MO.Properties["Name"].Value.ToString();
-                   }
-                }
-            }
-            catch { }
-
-            AddGridItem(new SupportInfoElement() { Name = "CPU", Value = cpu });
-
-            // Firmware
-
-            string bios_manufacturer = string.Empty;
-            string bios_version = string.Empty;
-            DateTime bios_datetime = DateTime.MinValue;
-
-            try
-            {
-
-
-                ManagementClass cs = new ManagementClass("win32_bios");
-                ManagementObjectCollection moc = cs.GetInstances();
-                if (moc.Count != 0)
-                {
-                    foreach (ManagementObject MO in cs.GetInstances())
-                    {
-                        bios_manufacturer = MO.Properties["Manufacturer"].Value.ToString();
-                        bios_version = MO.Properties["SMBIOSBIOSVersion"].Value.ToString();
-                        bios_datetime = ManagementDateTimeConverter.ToDateTime(MO.Properties["ReleaseDate"].Value.ToString()); 
-                    }
-                }
-            }
-            catch { }
-
-            AddGridItem(new SupportInfoElement() { Name = "Firmware", Value = $"{bios_manufacturer} {bios_version}, {bios_datetime.ToString("dd.MM.yyyy")}" });
-
-            // RAM
-
-            double ram_gb = 0L;
-
-            try
-            {
-
-
-                ManagementClass cs = new ManagementClass("Win32_OperatingSystem");
-                ManagementObjectCollection moc = cs.GetInstances();
-                if (moc.Count != 0)
-                {
-                    foreach (ManagementObject MO in cs.GetInstances())
-                    {
-                        ram_gb = double.Parse(MO.Properties["TotalVisibleMemorySize"].Value.ToString()) / 1024.0 / 1024.0;
-                    }
-                }
-            }
-            catch { }
-
-            AddGridItem(new SupportInfoElement() { Name = "RAM", Value = ram_gb.ToString("#.0") + " GB" });
 
             // Webcam
 
@@ -452,6 +490,7 @@ namespace Computer_Support_Info
 
         private void BtnExit_Click(object sender, RoutedEventArgs e)
         {
+            background_worker.CancelAsync();
             Application.Current.Shutdown();
         }
 

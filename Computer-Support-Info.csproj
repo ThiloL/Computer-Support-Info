@@ -2,16 +2,20 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <RootNamespace>Computer_Support_Info</RootNamespace>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
   <PropertyGroup>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
-    <PublishSingleFile>true</PublishSingleFile>
     <ApplicationIcon>MainIcon.ico</ApplicationIcon>
-    <Copyright>2021 | HUK-COBURG | Informatib Betrieb | SM+SV | Thilo Langbein</Copyright>
+    <Copyright>2021 | HUK-COBURG | Informatik Betrieb | SM+SV | Thilo Langbein</Copyright>
+    <Version>1.1</Version>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
