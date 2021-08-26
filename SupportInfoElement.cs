@@ -8,6 +8,7 @@ namespace Computer_Support_Info
 {
     public class SupportInfoElement
     {
+        public int Number { get; set; }
         public string Name { get; set; }
         public string Value { get; set; }
         public bool MakeBold { get; set; }

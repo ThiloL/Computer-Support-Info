@@ -14,5 +14,6 @@ namespace Computer_Support_Info
     /// </summary>
     public partial class App : Application
     {
+        
     }
 }

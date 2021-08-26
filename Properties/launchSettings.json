@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Computer-Support-Info": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

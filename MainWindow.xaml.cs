@@ -40,6 +40,7 @@ namespace Computer_Support_Info
     {
         private BackgroundWorker background_worker = new BackgroundWorker();
         public ViewModel vm;
+        int ItemNumber = 1;
 
         public MainWindow()
         {
@@ -76,6 +77,8 @@ namespace Computer_Support_Info
 
         private void AddGridItem(SupportInfoElement Item)
         {
+            Item.Number = ItemNumber++;
+
             Application.Current.Dispatcher.Invoke
             (
                 System.Windows.Threading.DispatcherPriority.Background,
@@ -144,6 +147,7 @@ namespace Computer_Support_Info
             string manufacturer = string.Empty;
             string model = string.Empty;
             string serial = string.Empty;
+            string serial_bios = string.Empty;
 
             try
             {
@@ -160,10 +164,23 @@ namespace Computer_Support_Info
                         serial = MO.Properties["SerialNumber"].Value.ToString();
                     }
                 }
+
+                ManagementClass cs2 = new ManagementClass("win32_bios");
+                ManagementObjectCollection moc2 = cs.GetInstances();
+                if (moc2.Count != 0)
+                {
+                    foreach (ManagementObject MO in cs2.GetInstances())
+                    {
+                        serial_bios = MO.Properties["SerialNumber"].Value.ToString();
+                    }
+                }
+
             }
             catch { }
 
-            AddGridItem(new SupportInfoElement() { Name = "Gerät", Value = $"{manufacturer} {model}, Seriennr.: {serial}" });
+            AddGridItem(new SupportInfoElement() { Name = "Gerät", Value = $"{manufacturer} {model}" });
+            AddGridItem(new SupportInfoElement() { Name = "Serien-Nummer (Baseboard)", Value = $"{serial}" });
+            AddGridItem(new SupportInfoElement() { Name = "Serien-Nummer (BIOS)", Value = $"{serial_bios}" });
 
             // CPU
 
@@ -519,7 +536,7 @@ namespace Computer_Support_Info
                 Mouse.OverrideCursor = Cursors.Wait;
 
                 p.Start();
-                p.WaitForExit(30000);
+                p.WaitForExit(120000);
 
                 Mouse.OverrideCursor = null;
 
@@ -531,6 +548,12 @@ namespace Computer_Support_Info
             {
                 MessageBox.Show("Fehler beim Speedtest!", "Speedtest", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void MenuItem_Click_1(object sender, RoutedEventArgs e)
+        {
+            WindowsUpdates WindowsUpdatesWindow = new WindowsUpdates();
+            WindowsUpdatesWindow.ShowDialog();
         }
     }
 }

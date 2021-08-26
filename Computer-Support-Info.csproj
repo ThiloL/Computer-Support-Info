@@ -11,16 +11,32 @@
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <ApplicationIcon>MainIcon.ico</ApplicationIcon>
     <Copyright>2021 | HUK-COBURG | Informatik Betrieb | SM+SV | Thilo Langbein</Copyright>
-    <Version>1.1</Version>
+    <Version>1.3</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="MainIcon.ico" />
     <None Remove="speedtest.exe" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <COMReference Include="WUApiLib">
+      <VersionMinor>0</VersionMinor>
+      <VersionMajor>2</VersionMajor>
+      <Guid>b596cc9f-56e5-419e-a622-e01bb457431e</Guid>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>false</Isolated>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </COMReference>
   </ItemGroup>
 
   <ItemGroup>

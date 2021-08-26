@@ -17,6 +17,7 @@
         <Menu Height="Auto" VerticalAlignment="Top" Grid.Row="0">
             <MenuItem Header="Aktionen">
                 <MenuItem Header="Internetgeschwindigkeit messen (Laufzeit: 1-2 Minuten)" Click="MenuItem_Click"/>
+                <MenuItem Header="Windows Update-Verlauf anzeigen" Click="MenuItem_Click_1" />
             </MenuItem>
         </Menu>
 
@@ -24,6 +25,7 @@
                 <DataGrid x:Name="SupportInfosGrid" Height="Auto" ItemsSource="{Binding Path=SupportInfoData}" IsSynchronizedWithCurrentItem="True" AutoGenerateColumns="False"                  
                             ColumnWidth="SizeToCells" Margin="5,5,5,5" DockPanel.Dock="Top" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
                     <DataGrid.Columns>
+                        <DataGridTextColumn Header="Nr." Binding="{Binding Number}" />
                         <DataGridTextColumn Header="Beschreibung" Binding="{Binding Name}" />
                         <DataGridTextColumn Header="Wert" Binding="{Binding Value}" />
                     </DataGrid.Columns>
