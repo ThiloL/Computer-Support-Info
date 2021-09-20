@@ -6,9 +6,14 @@
         xmlns:local="clr-namespace:Computer_Support_Info"
         mc:Ignorable="d"
         Title="Computer-Support-Info" Height="450" Width="800">
-    <Grid>
+    <Grid x:Name="MainGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        
         <!--ItemsSource="{Binding Path=WindowsUpdatesData}"-->
-        <DataGrid x:Name="WindowsUpdatesGrid" Height="Auto"  IsSynchronizedWithCurrentItem="True" AutoGenerateColumns="False"                  
+        <DataGrid x:Name="WindowsUpdatesGrid" Height="Auto"  IsSynchronizedWithCurrentItem="True" AutoGenerateColumns="False" Grid.Row="0"                 
                             ColumnWidth="SizeToCells" Margin="5,5,5,5" DockPanel.Dock="Top" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Datum" Binding="{Binding Date}" />
@@ -31,5 +36,8 @@
                 </Style>
             </DataGrid.Resources>
         </DataGrid>
+
+        <Button x:Name="BtnExit" Content="Dialog schließen" Margin="25" Click="BtnExit_Click" 
+                FontSize="16" Width="692" Grid.Row="1" VerticalAlignment="Bottom" ToolTip="Dialog schließen" />
     </Grid>
 </Window>

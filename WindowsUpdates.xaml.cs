@@ -46,6 +46,8 @@ namespace Computer_Support_Info
 
             this.Left = (workArea.Width - this.Width) / 2 + workArea.Left;
             this.Top = (workArea.Height - this.Height) / 2 + workArea.Top;
+
+            MainGrid.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFD8E8E5"));
         }
 
         private void Load()
@@ -112,6 +114,11 @@ namespace Computer_Support_Info
                     Category = category
                 });
             }
+        }
+
+        private void BtnExit_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
         }
     }
 }

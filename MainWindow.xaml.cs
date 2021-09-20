@@ -26,6 +26,7 @@ using Microsoft.WindowsAPICodePack.Shell;
 using Microsoft.WindowsAPICodePack.Shell.PropertySystem;
 using Path = System.IO.Path;
 
+using Humanizer;
 using AForge.Video.DirectShow;
 using NAudio.Wave;
 using System.ComponentModel;
@@ -255,12 +256,13 @@ namespace Computer_Support_Info
 
             // physical disk drives
 
+            List<DiskDrive> DiskDrives = new List<DiskDrive>();
+
             string disk_info = string.Empty;
 
             try
             {
                 string caption = string.Empty;
-                Int64 size = 0;
                 string size_text = string.Empty;
 
                 ManagementClass cs = new ManagementClass("win32_diskdrive");
@@ -274,17 +276,33 @@ namespace Computer_Support_Info
                         if (type == null) continue;
                         if (!type.Equals("fixed hard disk media", StringComparison.InvariantCultureIgnoreCase)) continue;
 
-                        caption = MO.Properties["Caption"].Value.ToString();
-                        size = Convert.ToInt64(MO.Properties["Size"].Value);
-                        size_text = (size / 1024.0 / 1024.0 / 1024.0).ToString("F");
+                        DiskDrives.Add(new DiskDrive()
+                        {
+                            Caption = MO.Properties["Caption"].Value.ToString(),
+                            Size = Convert.ToInt64(MO.Properties["Size"].Value),
+                            SerialNumber = MO.Properties["SerialNumber"].Value.ToString(),
+                            Index = Convert.ToInt32(MO.Properties["Index"].Value)
+                        });
 
-                        disk_info += $"{caption}, {size_text} GB\n";
+                        //caption = MO.Properties["Caption"].Value.ToString();
+                        //size = Convert.ToInt64(MO.Properties["Size"].Value);
+                        //size_text = (size / 1024.0 / 1024.0 / 1024.0).ToString("F");
+
+                        //disk_info += $"{caption}, {size_text} GB\n";
+                    }
+
+                    // sortieren
+                    DiskDrives = DiskDrives.OrderBy(x => x.Index).ToList();
+
+                    foreach(DiskDrive d in DiskDrives)
+                    {
+                        disk_info += string.Format("{0}  |  {1}  |  Serien-Nr.: {2}  |  Größe: {3}\n", d.Index, d.Caption, d.SerialNumber, d.DiskSizeText);
                     }
                 }
             }
             catch { }
 
-            AddGridItem(new SupportInfoElement() { Name = "physikalische Laufwerke", Value = $"{disk_info}" });
+            AddGridItem(new SupportInfoElement() { Name = "Laufwerke (physikalisch)", Value = $"{disk_info}" });
 
             // logical drives
 
@@ -296,14 +314,14 @@ namespace Computer_Support_Info
                 {
                     if (!d.DriveType.Equals(DriveType.Fixed)) continue;
 
-                    var fds = ((double)d.AvailableFreeSpace / 1024.0 / 1024.0 / 1024.0).ToString("F");
+                    var fds = (d.AvailableFreeSpace).Bytes().Humanize("#.#");
 
-                    drive_string += $"Laufwerk: {d.Name}, Speicherplatz (frei): {fds} GB\n";
+                    drive_string += $"Laufwerk: {d.Name}  |  Speicherplatz (frei): {fds}\n";
                 }
 
                 if (!string.IsNullOrEmpty(drive_string))
                 {
-                    AddGridItem(new SupportInfoElement() { Name = "logische Laufwerke", Value = drive_string });
+                    AddGridItem(new SupportInfoElement() { Name = "Laufwerke (logisch)", Value = drive_string });
 
                 }
             }
