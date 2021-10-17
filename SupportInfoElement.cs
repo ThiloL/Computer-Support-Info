@@ -8,6 +8,7 @@ namespace Computer_Support_Info
 {
     public class SupportInfoElement
     {
+        public int Column { get; set; }
         public int Number { get; set; }
         public string Name { get; set; }
         public string Value { get; set; }

@@ -21,5 +21,10 @@ namespace Computer_Support_Info
             } 
         }
 
+        public override string ToString()
+        {
+            return string.Format("{0} | {1} | Serien-Nr.: {2} | Größe: {3}", Index, Caption.Trim(), SerialNumber.Trim(), DiskSizeText);
+        }
+
     }
 }

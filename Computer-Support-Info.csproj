@@ -44,6 +44,7 @@
     <PackageReference Include="Humanizer.Core.de" Version="2.11.10" />
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
     <PackageReference Include="NAudio" Version="1.10.0" />
+    <PackageReference Include="Vanara.PInvoke.Security" Version="3.3.12" />
   </ItemGroup>
 
   <ItemGroup>
