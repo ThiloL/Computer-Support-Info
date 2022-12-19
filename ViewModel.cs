@@ -13,6 +13,7 @@ namespace Computer_Support_Info
     {
         public CollectionViewSource ViewSource1 { get; set; }
         public CollectionViewSource ViewSource2 { get; set; }
+        public CollectionViewSource ViewSource3 { get; set; }
 
         public ObservableCollection<SupportInfoElement> SupportInfoData
         {
@@ -34,6 +35,7 @@ namespace Computer_Support_Info
             };
 
             ViewSource1.SortDescriptions.Add(new SortDescription("Number", ListSortDirection.Ascending));
+            ViewSource1.SortDescriptions.Add(new SortDescription("SubNumber", ListSortDirection.Ascending));
 
 
             this.ViewSource2 = new CollectionViewSource();
@@ -46,6 +48,19 @@ namespace Computer_Support_Info
             };
 
             ViewSource2.SortDescriptions.Add(new SortDescription("Number", ListSortDirection.Ascending));
+            ViewSource2.SortDescriptions.Add(new SortDescription("SubNumber", ListSortDirection.Ascending));
+
+            this.ViewSource3 = new CollectionViewSource();
+
+            ViewSource3.Source = this.SupportInfoData;
+
+            ViewSource3.Filter += (sender, e) => {
+                SupportInfoElement sie = e.Item as SupportInfoElement;
+                e.Accepted = sie.Column.Equals(3);
+            };
+
+            ViewSource3.SortDescriptions.Add(new SortDescription("Number", ListSortDirection.Ascending));
+            ViewSource3.SortDescriptions.Add(new SortDescription("SubNumber", ListSortDirection.Ascending));
 
 
         }

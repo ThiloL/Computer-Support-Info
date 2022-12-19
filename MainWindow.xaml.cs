@@ -28,10 +28,14 @@ using Path = System.IO.Path;
 
 using Humanizer;
 using Vanara.PInvoke;
+
 using AForge.Video.DirectShow;
 using NAudio.Wave;
 using System.ComponentModel;
 using System.Reflection;
+using static Vanara.PInvoke.Gdi32;
+using System.Runtime.InteropServices;
+
 
 namespace Computer_Support_Info
 {
@@ -45,6 +49,8 @@ namespace Computer_Support_Info
         private BackgroundWorker background_worker = new BackgroundWorker();
         public ViewModel vm;
 
+        bool IsConnectedToInternet = false;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -54,12 +60,15 @@ namespace Computer_Support_Info
             vm = new ViewModel();
             DataContext = vm;
 
+            // check internet connection
+            WinINet.INTERNET_CONNECTION ic;
+            IsConnectedToInternet = WinINet.InternetGetConnectedState(out ic, 0);
+
             background_worker.WorkerReportsProgress = false;
             background_worker.DoWork += Background_worker_DoWork;
             background_worker.RunWorkerCompleted += Background_worker_RunWorkerCompleted;
 
             Mouse.OverrideCursor = Cursors.Wait;
-
             background_worker.RunWorkerAsync();
         }
 
@@ -67,6 +76,7 @@ namespace Computer_Support_Info
         {
             SupportInfosGrid1.Items.Refresh();
             SupportInfosGrid2.Items.Refresh();
+            SupportInfosGrid3.Items.Refresh();
 
             MainGrid.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFD8E8E5"));
             Mouse.OverrideCursor = null;
@@ -91,6 +101,8 @@ namespace Computer_Support_Info
         {
             public SupportInfotype support_info_type { get; set; }
             public int number { get; set; }
+
+            public string number_prefix { get; set; }
             public int col { get; set; }
         }
 
@@ -103,7 +115,6 @@ namespace Computer_Support_Info
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.IsAdmin, number = no++, col = 1 });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.ComputerName, number = no++, col = 1 });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.OperatingSystem, number = no++, col = 1 });
-            th.Add(new Taskhelper() { support_info_type = SupportInfotype.WindowsVersionInfo, number = no++, col = 1 });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.ComputerManufacturer, number = no++, col = 1 });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.ComputerModel, number = no++, col = 1 });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.Firmware, number = no++, col = 1 });
@@ -128,18 +139,19 @@ namespace Computer_Support_Info
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.AudioOutDevices, number = no++, col = 2 });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.AudioInDevices, number = no++, col = 2 });
 
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.WebcamDetails, number_prefix = "WC", number = 1, col = 3 });
+
             Parallel.ForEach(th, one  =>
             {
-                SupportInfoElement r = LoadData(one.support_info_type, one.number, one.col);
-                AddGridItem(r);
+                List<SupportInfoElement> Results = LoadData(one.support_info_type, one.number, one.col);
+                foreach(SupportInfoElement sie in Results) AddGridItem(sie);
             });
         }
 
+        // add item(s) 
         private void AddGridItem(SupportInfoElement Item)
         {
-            //Item.Number = ItemNumber++;
-
-            Application.Current.Dispatcher.Invoke
+            System.Windows.Application.Current.Dispatcher.Invoke
             (
                 System.Windows.Threading.DispatcherPriority.Background,
                 new Action(() =>
@@ -147,13 +159,14 @@ namespace Computer_Support_Info
                     vm.AddItem(Item);
                     vm.ViewSource1.View.Refresh();
                     vm.ViewSource2.View.Refresh();
+                    vm.ViewSource3.View.Refresh();
                     RepositionWindows();
-                }
-                )
+                })
             );
         }
 
-        private SupportInfoElement LoadData(SupportInfotype sit, int number, int col)
+
+        private List<SupportInfoElement> LoadData(SupportInfotype sit, int number, int col, string number_prefix = "")
         {
             if (sit == SupportInfotype.UserName)
             {
@@ -168,7 +181,14 @@ namespace Computer_Support_Info
 
                                
 
-                return new SupportInfoElement() { Name = "Benutzername", Value = $"{user} {fn}", Number = number, Column = col};
+                return new List<SupportInfoElement> { 
+                    new SupportInfoElement() { 
+                        Name = "Benutzername", 
+                        Value = $"{user} {fn}", 
+                        Number = number, 
+                        Column = col 
+                    } 
+                };
             }
 
             if (sit == SupportInfotype.IsAdmin)
@@ -202,14 +222,36 @@ namespace Computer_Support_Info
                 catch { }
 
                 if (CurrentUserIsmemberOfAdminGroup)
-                    return new SupportInfoElement() { Name = "Administrative Rechte", Value = "JA", MakeBold = true, Number = number, Column = col };
+                    return new List<SupportInfoElement> {
+                        new SupportInfoElement() { 
+                            Name = "Administrative Rechte", 
+                            Value = "JA", 
+                            MakeBold = true, 
+                            Number = number, 
+                            Column = col
+                        } 
+                    };
                 else
-                    return new SupportInfoElement() { Name = "Administrative Rechte", Value = "NEIN", Number = number, Column = col };
+                    return new List<SupportInfoElement> {
+                        new SupportInfoElement() { 
+                            Name = "Administrative Rechte", 
+                            Value = "NEIN", 
+                            Number = number, 
+                            Column = col 
+                        }
+                    };
             }
 
             if (sit == SupportInfotype.ComputerName)
             {
-                return new SupportInfoElement() { Name = "Computername", Value = Environment.MachineName, Number = number, Column = col };
+                return new List<SupportInfoElement> {
+                    new SupportInfoElement() {
+                        Name = "Computername",
+                        Value = Environment.MachineName,
+                        Number = number,
+                        Column = col 
+                    }
+                };
             }
 
             if (sit == SupportInfotype.OperatingSystem)
@@ -218,17 +260,52 @@ namespace Computer_Support_Info
                 var releaseID = (string)Microsoft.Win32.Registry.LocalMachine.OpenSubKey("Software\\Microsoft\\Windows NT\\CurrentVersion")?.GetValue("ReleaseID");
                 var x64 = Environment.Is64BitOperatingSystem ? "x64" : "x86";
 
-                return new SupportInfoElement() { Name = "Betriebssystem-Edition | -Release | -Architektur", Value = $"{versionString}  |  {releaseID}  |  {x64}", Number = number, Column = col };
-            }
+                List<SupportInfoElement> O = new List<SupportInfoElement>();
 
-            if (sit == SupportInfotype.WindowsVersionInfo)
-            {
+                int N = 1;
+
+                O.Add(new SupportInfoElement()
+                {
+                    Name = "Betriebssystem",
+                    Value = versionString,
+                    Number = number,
+                    SubNumber = N++,
+                    Column = col
+                });
+
+                O.Add(new SupportInfoElement()
+                {
+                    Name = "-Release",
+                    Value = releaseID,
+                    Number = number,
+                    SubNumber = N++,
+                    Column = col
+                });
+
+                O.Add(new SupportInfoElement()
+                {
+                    Name = "-Architektur",
+                    Value = x64,
+                    Number = number,
+                    SubNumber = N++,
+                    Column = col
+                });
+
                 var os_major = (int)Microsoft.Win32.Registry.LocalMachine.OpenSubKey("Software\\Microsoft\\Windows NT\\CurrentVersion")?.GetValue("CurrentMajorVersionNumber");
                 var os_minor = (int)Microsoft.Win32.Registry.LocalMachine.OpenSubKey("Software\\Microsoft\\Windows NT\\CurrentVersion")?.GetValue("CurrentMinorVersionNumber");
                 var currentBuildNumber = (string)Microsoft.Win32.Registry.LocalMachine.OpenSubKey("Software\\Microsoft\\Windows NT\\CurrentVersion")?.GetValue("currentBuildNumber");
                 var ubr = (int)Microsoft.Win32.Registry.LocalMachine.OpenSubKey("Software\\Microsoft\\Windows NT\\CurrentVersion")?.GetValue("UBR");
 
-                return new SupportInfoElement() { Name = "Betriebssystem-Version", Value = $"{os_major}.{os_minor}.{currentBuildNumber}.{ubr}", Number = number, Column = col };
+                O.Add(new SupportInfoElement()
+                {
+                    Name = "-Version",
+                    Value = $"{os_major}.{os_minor}.{currentBuildNumber}.{ubr}",
+                    Number = number,
+                    SubNumber = N++,
+                    Column = col
+                });
+
+                return O;
             }
 
             if (sit == SupportInfotype.ComputerManufacturer)
@@ -252,7 +329,14 @@ namespace Computer_Support_Info
                 }
                 catch { }
 
-                return new SupportInfoElement() { Name = "Hersteller", Value = manufacturer, Number = number, Column = col };
+                return new List<SupportInfoElement> {
+                    new SupportInfoElement() {
+                        Name = "Hersteller",
+                        Value = manufacturer,
+                        Number = number,
+                        Column = col 
+                    }
+                };
                 
             }
 
@@ -277,7 +361,14 @@ namespace Computer_Support_Info
                 }
                 catch { }
 
-                return new SupportInfoElement() { Name = "Modell", Value =model, Number = number, Column = col };
+                return new List<SupportInfoElement> {
+                    new SupportInfoElement() {
+                        Name = "Modell",
+                        Value =model,
+                        Number = number,
+                        Column = col 
+                    }
+                };
 
             }
 
@@ -299,7 +390,14 @@ namespace Computer_Support_Info
                 }
                 catch { }
 
-                return new SupportInfoElement() { Name = "Serien-Nummer (Baseboard)", Value = $"{serial}", Number = number, Column = col };
+                return new List<SupportInfoElement> {
+                    new SupportInfoElement() {
+                        Name = "Serien-Nummer (Baseboard)",
+                        Value = $"{serial}",
+                        Number = number,
+                        Column = col 
+                    }
+                };
             }
 
             if (sit == SupportInfotype.SerialBios)
@@ -320,7 +418,14 @@ namespace Computer_Support_Info
                 }
                 catch { }
 
-                return new SupportInfoElement() { Name = "Serien-Nummer (BIOS)", Value = $"{serial}", Number = number, Column = col };
+                return new List<SupportInfoElement> {
+                    new SupportInfoElement() {
+                        Name = "Serien-Nummer (BIOS)",
+                        Value = $"{serial}",
+                        Number = number,
+                        Column = col
+                    }
+                };
             }
 
             if (sit == SupportInfotype.CPU)
@@ -341,7 +446,15 @@ namespace Computer_Support_Info
                     }
                 }
                 catch { }
-                return new SupportInfoElement() { Name = "CPU", Value = cpu, Number = number, Column = col };
+                
+                return new List<SupportInfoElement> {
+                    new SupportInfoElement() {
+                        Name = "CPU",
+                        Value = cpu,
+                        Number = number,
+                        Column = col 
+                    }
+                };
             }
 
             if (sit == SupportInfotype.Firmware)
@@ -370,7 +483,39 @@ namespace Computer_Support_Info
                 }
                 catch { }
 
-                return new SupportInfoElement() { Name = "Firmware-Hersteller | -Version | -Datum", Value = $"{bios_manufacturer}  |  {bios_version}  | {bios_datetime.ToString("dd.MM.yyyy")}", Number = number, Column = col };
+                List<SupportInfoElement> F = new List<SupportInfoElement>();
+
+                int N = 1;
+
+                F.Add(new SupportInfoElement()
+                {
+                    Name = "Firmware-Hersteller",
+                    Value = bios_manufacturer,
+                    Number = number,
+                    SubNumber = N++,
+                    Column = col
+                });
+
+                F.Add(new SupportInfoElement()
+                {
+                    Name = "-Version",
+                    Value = bios_version,
+                    Number = number,
+                    SubNumber = N++,
+                    Column = col
+                });
+
+                F.Add(new SupportInfoElement()
+                {
+                    Name = "-Datum",
+                    Value = bios_datetime.ToString("dd.MM.yyyy"),
+                    Number = number,
+                    SubNumber = N++,
+                    Column = col
+                });
+
+                return F;
+
             }
 
             if (sit == SupportInfotype.Memory)
@@ -395,7 +540,14 @@ namespace Computer_Support_Info
                 }
                 catch { }
 
-                return new SupportInfoElement() { Name = "RAM", Value = ram, Number = number, Column = col };
+                return new List<SupportInfoElement> {
+                    new SupportInfoElement() {
+                        Name = "RAM",
+                        Value = ram,
+                        Number = number,
+                        Column = col
+                    }
+                };
             }
 
             if (sit == SupportInfotype.PhysicalDrives)
@@ -437,11 +589,14 @@ namespace Computer_Support_Info
                 }
                 catch { }
 
-                return new SupportInfoElement() { 
-                    Name = "Laufwerke (physikalisch)", 
-                    Value = string.Join("\n", DiskDrives.Select(x => x.ToString())), 
-                    Number = number, 
-                    Column = col };
+                return new List<SupportInfoElement> {
+                    new SupportInfoElement() {
+                        Name = "Laufwerk (phys.)",
+                        Value = string.Join("\n", DiskDrives.Select(x => x.ToString())),
+                        Number = number,
+                        Column = col
+                    }
+                };
             }
 
             if (sit == SupportInfotype.LogicalDrives)
@@ -469,19 +624,28 @@ namespace Computer_Support_Info
                 }
                 catch { }
 
-                return new SupportInfoElement() { 
-                    Name = "Laufwerke (logisch)", 
-                    Value = string.Join("\n", L.Select(x => x.ToString())), 
-                    Number = number, 
-                    Column = col };
+                return new List<SupportInfoElement> {
+                    new SupportInfoElement() {
+                        Name = "Laufwerk (log.)",
+                        Value = string.Join("\n", L.Select(x => x.ToString())),
+                        Number = number,
+                        Column = col
+                    }
+                };
             }
 
             if (sit == SupportInfotype.Network)
             {
                 // netzwerk info
 
+                int N = 1;
+
+                List<SupportInfoElement> C = new List<SupportInfoElement>();
+
                 List<NetworkInfo> NetworkAdapter = new List<NetworkInfo>();
-                string net_info = string.Empty;
+                //string net_info = string.Empty;
+
+                string ip = string.Empty;
 
                 try
                 {
@@ -490,10 +654,6 @@ namespace Computer_Support_Info
                     foreach (var n in NetworkInterface.GetAllNetworkInterfaces())
                     {
                         if (n.NetworkInterfaceType.Equals(NetworkInterfaceType.Loopback)) continue;
-
-                        
-                        //if (n.OperationalStatus.Equals(OperationalStatus.Down)) continue;
-                        
 
                         IPInterfaceProperties ipip = n.GetIPProperties();
 
@@ -507,7 +667,9 @@ namespace Computer_Support_Info
                         {
                             if (!u.Address.AddressFamily.Equals(System.Net.Sockets.AddressFamily.InterNetwork)) continue;
 
-                            NetworkAdapter.Add(new NetworkInfo() { AdapterName = n.Description, Speed = n.Speed, IP = u.Address.ToString() });
+                            ip = u.Address.ToString();
+
+                            NetworkAdapter.Add(new NetworkInfo() { AdapterName = "■ " + n.Description, Speed = n.Speed });
                         }
 
 
@@ -517,16 +679,52 @@ namespace Computer_Support_Info
                 }
                 catch { }
 
-                return new SupportInfoElement() { 
-                    Name = "Netzwerk", 
-                    Value = string.Join("\n", NetworkAdapter.Select(x => x.ToString())), 
-                    Number = number, 
-                    Column = col };
+
+                C.Add(
+                    new SupportInfoElement() {
+                        Name = "Netzwerk",
+                        Value = string.Join("\n", NetworkAdapter.Select(x => x.ToString())),
+                        Number = number,
+                        SubNumber = N++,
+                        Column = col
+                    }
+                );
+
+                if (!string.IsNullOrEmpty(ip))
+                C.Add(
+                    new SupportInfoElement()
+                    {
+                        Name = "IP-Adresse",
+                        Value = ip,
+                        Number = number,
+                        SubNumber = N++,
+                        Column = col
+                    }
+                );
+
+                return C;
+
+
             }
 
             if (sit == SupportInfotype.Ping)
             {
                 // Ping
+
+                if (!IsConnectedToInternet)
+                {
+                    MenuInternetSpeed.IsEnabled = false;
+
+                    return new List<SupportInfoElement> {
+                        new SupportInfoElement() {
+                            Name = "Ping (8.8.8.8)",
+                            Value = "Keine Internetverbindung",
+                            Number = number,
+                            Column = col,
+                            MakeBold = true
+                        }
+                    };
+                }
 
                 string ping_info = string.Empty;
 
@@ -544,14 +742,21 @@ namespace Computer_Support_Info
                 }
                 catch { }
 
-                return new SupportInfoElement() { Name = "Ping (8.8.8.8)", Value = ping_info, Number = number, Column = col };
+                return new List<SupportInfoElement> {
+                    new SupportInfoElement() {
+                        Name = "Ping (8.8.8.8)",
+                        Value = ping_info,
+                        Number = number,
+                        Column = col
+                    }
+                };
             }
 
             if (sit == SupportInfotype.Webcam)
             {
                 // Webcam
 
-                string WebCamInfo = string.Empty;
+                List<WebcamInfo> W = new List<WebcamInfo>();
 
                 FilterInfoCollection videoInputCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
 
@@ -559,52 +764,142 @@ namespace Computer_Support_Info
                 {
                     foreach (FilterInfo videoDevice in videoInputCollection)
                     {
-                        WebCamInfo += $"{videoDevice.Name}\n";
+                        List<ResolutionAndFramerate> R = new List<ResolutionAndFramerate>();
+                        //VideoCaptureDevice vcd = new VideoCaptureDevice(videoDevice.MonikerString);
+
+                        //if (vcd != null)
+                        //{
+                        //    foreach(VideoCapabilities vc in vcd.VideoCapabilities)
+                        //    {
+
+                        //    }
+                        //}
+
+                        W.Add(new WebcamInfo()
+                        {
+                            Name = videoDevice.Name,
+                            Resolutions = R
+                        });       
                     }
 
                 }
 
-                return new SupportInfoElement() { Name = "Webcam", Value = WebCamInfo, Number = number, Column = col };
+                return new List<SupportInfoElement> {
+                    new SupportInfoElement() {
+                        Name = "Webcam",
+                        Value = string.Join("\n", W.Select(x => x.ToString())),
+                        Number = number,
+                        Column = col
+                    }
+                };
+            }
+
+            if (sit == SupportInfotype.WebcamDetails)
+            {
+                // Webcam-Details
+
+                List<WebcamInfo> W = new List<WebcamInfo>();
+
+                FilterInfoCollection videoInputCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+
+                if ((videoInputCollection != null) && (videoInputCollection.Count > 0))
+                {
+                    foreach (FilterInfo videoDevice in videoInputCollection)
+                    {
+                        List<ResolutionAndFramerate> R = new List<ResolutionAndFramerate>();
+                        VideoCaptureDevice vcd = new VideoCaptureDevice(videoDevice.MonikerString);
+
+                        if (vcd != null)
+                        {
+                            foreach (VideoCapabilities vc in vcd.VideoCapabilities)
+                            {
+                                R.Add(new ResolutionAndFramerate() {
+                                    Width = vc.FrameSize.Width,
+                                    Height = vc.FrameSize.Height,
+                                    Framerate = vc.AverageFrameRate
+                                });
+                            }
+                        }
+
+                        W.Add(new WebcamInfo()
+                        {
+                            Name = videoDevice.Name,
+                            Resolutions = R
+                        });
+                    }
+
+                }
+
+                List<SupportInfoElement> L = new List<SupportInfoElement>();
+
+                foreach(WebcamInfo wci in W)
+                {
+                    L.Add(new SupportInfoElement()
+                    {
+                        Name = wci.Name,
+                        Value = wci.ResultionText,
+                        Column = 3,
+                        MakeBold = false,
+                        Number = number++
+                    });
+                }
+
+                return L;
             }
 
             if (sit == SupportInfotype.AudioOutDevices)
             {
-                // Audio
+                // Audio (out)
 
-                string AudioOutInfo = string.Empty;
-
+                List<string> audio_out = new List<string>();
 
                 try
                 {
                     for (int i = -1; i < WaveOut.DeviceCount; i++)
                     {
                         var c = WaveOut.GetCapabilities(i);
-                        AudioOutInfo += c.ProductName + "\n";
+                        audio_out.Add(c.ProductName);
                     }
-
-                    
                 }
                 catch { }
 
-                return new SupportInfoElement() { Name = "Audio (Out)", Value = AudioOutInfo, Number = number, Column = col };
+                if (audio_out.Count > 0)
+                    return new List<SupportInfoElement> {
+                        new SupportInfoElement() {
+                            Name = "Audio (Out)",
+                            Value = audio_out.Aggregate((x,y) => x + "\n" + y).ToString(),
+                            Number = number,
+                            Column = col
+                        }
+                    };
             }
 
             if (sit == SupportInfotype.AudioInDevices)
             {
-                string AudioInInfo = string.Empty;
+                // Audio (in)
+
+                List<string> audio_in = new List<string>();
 
                 try
                 {
                     for (int i = -1; i < WaveIn.DeviceCount; i++)
                     {
                         var c = WaveIn.GetCapabilities(i);
-                        AudioInInfo += c.ProductName + "\n";
+                        audio_in.Add(c.ProductName);
                     }
                    
                 }
                 catch { }
 
-                return new SupportInfoElement() { Name = "Audio (In)", Value = AudioInInfo, Number = number, Column = col };
+                if (audio_in.Count > 0)
+                return new List<SupportInfoElement> {
+                    new SupportInfoElement() {
+                        Name = "Audio (In)",
+                        Value = audio_in.Aggregate((x,y) => x + "\n" + y).ToString(),
+                        Number = number,
+                        Column = col
+                    }
+                };
             }
 
             if (sit == SupportInfotype.GraphicsCard)
@@ -631,12 +926,73 @@ namespace Computer_Support_Info
                 }
                 catch { }
 
-                return new SupportInfoElement() { Name = "Grafikkarte", Value = string.Join("\n", G.Select(x => x.ToString())), Number = number, Column = col };
+                return new List<SupportInfoElement> {
+                    new SupportInfoElement() {
+                        Name = "Grafikkarte",
+                        Value = string.Join("\n", G.Select(x => x.ToString())),
+                        Number = number,
+                        Column = col
+                    }
+                };
             }
 
             if (sit == SupportInfotype.Display)
             {
+                //foreach(System.Windows.Forms.Screen s in System.Windows.Forms.Screen.AllScreens)
+                //{
+                //    Debug.WriteLine(s.ToString());
+                //}
+
+
+
                 List<DisplayInfo> D = new List<DisplayInfo>();
+
+                List<DisplayDevice> DisplayDevices = new List<DisplayDevice>();
+
+                // display devices structure
+                DISPLAY_DEVICE dd = new DISPLAY_DEVICE();
+                dd.cb = (uint)Marshal.SizeOf(dd);
+
+                for(uint id=0; Vanara.PInvoke.User32.EnumDisplayDevices(null, id, ref dd, 0 ); id++)
+                {
+                    if (dd.StateFlags.HasFlag(DISPLAY_DEVICE_FLAGS.DISPLAY_DEVICE_ACTIVE))
+                    {
+                        string did = dd.DeviceID;
+                        string name = dd.DeviceName;
+                        string displaystring = dd.DeviceString;
+
+                        Vanara.PInvoke.User32.EnumDisplayDevices(dd.DeviceName, 0, ref dd, 0);
+
+                        string monitor = dd.DeviceString;
+
+                        DisplayDevices.Add(new DisplayDevice()
+                        {
+                            ID = did,
+                            Name = name,
+                            DisplayString = displaystring,
+                            Monitor = monitor
+                        });
+                    }
+                }
+
+                // device mode structure
+                DEVMODE dm = new DEVMODE();
+
+                foreach (DisplayDevice DispDev in DisplayDevices)
+                {
+
+                    bool ret = Vanara.PInvoke.User32.EnumDisplaySettings(DispDev.Name, Vanara.PInvoke.User32.ENUM_CURRENT_SETTINGS, ref dm);
+
+                    if (ret)
+                    {
+                        DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.BitsPerPel = (int)dm.dmBitsPerPel;
+                        DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.DisplayFrequency = (int)dm.dmDisplayFrequency;
+                        DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.PelsWidth = (int)dm.dmPelsWidth;
+                        DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.PelsHeight = (int)dm.dmPelsHeight;
+                    }
+                }
+
+                string display_info = string.Join("\n", DisplayDevices.Select(x => x.ToString()));
 
                 try
                 {
@@ -656,11 +1012,14 @@ namespace Computer_Support_Info
                 }
                 catch { }
 
-                return new SupportInfoElement() { 
-                    Name = "Monitor", 
-                    Value = string.Join("\n", D.Select(x => x.ToString())), 
-                    Number = number, 
-                    Column = col };
+                return new List<SupportInfoElement> {
+                    new SupportInfoElement() {
+                        Name = "Monitor",
+                        Value = string.Join("\n", D.Select(x => x.ToString())) + "\n" + display_info,
+                        Number = number,
+                        Column = col
+                    }
+                };
             }
 
             if (sit == SupportInfotype.Bitlocker)
@@ -677,7 +1036,14 @@ namespace Computer_Support_Info
                 else
                     bitLocker = "Aus";
 
-                return new SupportInfoElement() { Name = "Bitlocker (C:)", Value = bitLocker, Number = number, Column = col };
+                return new List<SupportInfoElement> {
+                    new SupportInfoElement() {
+                        Name = "Bitlocker (C:)",
+                        Value = bitLocker,
+                        Number = number,
+                        Column = col
+                    }
+                };
             }
 
             return null;
@@ -686,7 +1052,7 @@ namespace Computer_Support_Info
         private void BtnExit_Click(object sender, RoutedEventArgs e)
         {
             background_worker.CancelAsync();
-            Application.Current.Shutdown();
+            System.Windows.Application.Current.Shutdown();
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)

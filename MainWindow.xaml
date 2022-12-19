@@ -8,10 +8,18 @@
         Title="Computer-Support-Info" Height="650" Width="800" SizeToContent="WidthAndHeight" 
         WindowStartupLocation="CenterScreen" MinWidth="800" MinHeight="650" FontSize="13"
         >
+    
+    <Window.Resources>
+        <Style TargetType="{x:Type DataGridCell}">
+            <Setter Property="Padding" Value="0,0,0,20" />
+        </Style>
+    </Window.Resources>
+
     <Grid x:Name="MainGrid" Background="#FFFFA163">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*" />
-            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -19,14 +27,16 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Menu Height="Auto" VerticalAlignment="Top" Grid.Row="0" Grid.ColumnSpan="2">
+        <Menu Height="Auto" VerticalAlignment="Top" Grid.Row="0" Grid.ColumnSpan="3">
             <MenuItem Header="Aktionen">
-                <MenuItem Header="Internetgeschwindigkeit messen (Laufzeit: 1-2 Minuten)" Click="MenuItem_Click"/>
+                <MenuItem x:Name="MenuInternetSpeed" Header="Internetgeschwindigkeit messen (Laufzeit: 1-2 Minuten)" Click="MenuItem_Click"/>
                 <MenuItem Header="Windows Update-Verlauf anzeigen" Click="MenuItem_Click_1" />
             </MenuItem>
         </Menu>
 
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.Row="1" Grid.Column="0">
+            <StackPanel VerticalAlignment="Top">
+                <Label Content="Benutzer/Betriebssystem/Computer/Netzwerk" Background="#FFC8C8C8" Margin="5,5,5,0" FontWeight="Bold" />
                 <DataGrid x:Name="SupportInfosGrid1" Height="Auto" ItemsSource="{Binding Path=ViewSource1.View}" IsSynchronizedWithCurrentItem="True" 
                           AutoGenerateColumns="False" CanUserSortColumns="False"
                             ColumnWidth="SizeToCells" Margin="5,5,5,5" DockPanel.Dock="Top" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
@@ -49,36 +59,69 @@
                             </Style.Triggers>
                         </Style>
                     </DataGrid.Resources>
-                </DataGrid> 
+                </DataGrid>
+            </StackPanel>
         </ScrollViewer>
 
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.Row="1" Grid.Column="1">
-            <DataGrid x:Name="SupportInfosGrid2" Height="Auto" ItemsSource="{Binding Path=ViewSource2.View}" IsSynchronizedWithCurrentItem="True" 
+            <StackPanel VerticalAlignment="Top">
+                <Label Content="Geräte" Background="#FFC8C8C8" Margin="5,5,5,0" FontWeight="Bold" />
+                <DataGrid x:Name="SupportInfosGrid2" Height="Auto" ItemsSource="{Binding Path=ViewSource2.View}" IsSynchronizedWithCurrentItem="True" 
                           AutoGenerateColumns="False" CanUserSortColumns="False"
                             ColumnWidth="SizeToCells" Margin="5,5,5,5" DockPanel.Dock="Top" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Nr." Binding="{Binding Number}" />
-                    <DataGridTextColumn Header="Beschreibung" Binding="{Binding Name}" />
-                    <DataGridTextColumn Header="Wert" Binding="{Binding Value}" />
-                </DataGrid.Columns>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Nr." Binding="{Binding Number}" />
+                        <DataGridTextColumn Header="Beschreibung" Binding="{Binding Name}" />
+                        <DataGridTextColumn Header="Wert" Binding="{Binding Value}" />
+                    </DataGrid.Columns>
 
-                <DataGrid.HorizontalGridLinesBrush>
-                    <SolidColorBrush Color="#25000000"/>
-                </DataGrid.HorizontalGridLinesBrush>
+                    <DataGrid.HorizontalGridLinesBrush>
+                        <SolidColorBrush Color="#25000000"/>
+                    </DataGrid.HorizontalGridLinesBrush>
 
-                <DataGrid.Resources>
-                    <Style TargetType="{x:Type DataGridRow}">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding MakeBold}" Value="True">
-                                <Setter Property="FontWeight" Value="Bold" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </DataGrid.Resources>
-            </DataGrid>
+                    <DataGrid.Resources>
+                        <Style TargetType="{x:Type DataGridRow}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding MakeBold}" Value="True">
+                                    <Setter Property="FontWeight" Value="Bold" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.Resources>
+                </DataGrid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.Row="1" Grid.Column="2">
+            <StackPanel VerticalAlignment="Top">
+                <Label Content="Webcam-Details" Background="#FFC8C8C8" Margin="5,5,5,0" FontWeight="Bold" />
+                <DataGrid x:Name="SupportInfosGrid3" Height="Auto" ItemsSource="{Binding Path=ViewSource3.View}" IsSynchronizedWithCurrentItem="True" 
+                          AutoGenerateColumns="False" CanUserSortColumns="False"
+                            ColumnWidth="SizeToCells" Margin="5,5,5,5" DockPanel.Dock="Top" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Nr." Binding="{Binding Number}" />
+                        <DataGridTextColumn Header="Beschreibung" Binding="{Binding Name}" />
+                        <DataGridTextColumn Header="Wert" Binding="{Binding Value}" />
+                    </DataGrid.Columns>
+
+                    <DataGrid.HorizontalGridLinesBrush>
+                        <SolidColorBrush Color="#25000000"/>
+                    </DataGrid.HorizontalGridLinesBrush>
+
+                    <DataGrid.Resources>
+                        <Style TargetType="{x:Type DataGridRow}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding MakeBold}" Value="True">
+                                    <Setter Property="FontWeight" Value="Bold" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.Resources>
+                </DataGrid>
+            </StackPanel>
         </ScrollViewer>
 
 
-        <Button x:Name="BtnExit" Content="Exit" Margin="25" Click="BtnExit_Click" FontSize="16" Width="692" Grid.Row="2" Grid.ColumnSpan="2" VerticalAlignment="Bottom" ToolTip="Anwendung beenden" />
+        <Button x:Name="BtnExit" Content="Exit" Margin="25" Click="BtnExit_Click" FontSize="16" Width="692" Grid.Row="2" Grid.ColumnSpan="3" VerticalAlignment="Bottom" ToolTip="Anwendung beenden" />
         </Grid>
 </Window>
