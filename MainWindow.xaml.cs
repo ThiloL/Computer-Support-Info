@@ -1161,7 +1161,9 @@ namespace Computer_Support_Info
 
                 string output = p.StandardOutput.ReadToEnd();
 
-                MessageBox.Show(output, "Speedtest", MessageBoxButton.OK, MessageBoxImage.Information);
+                Speedtest SpeedtestWindow = new Speedtest();
+                SpeedtestWindow.TextOut.Text = output;
+                SpeedtestWindow.ShowDialog();
             }
             catch
             {

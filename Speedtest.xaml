@@ -1,0 +1,21 @@
+﻿<Window x:Class="Computer_Support_Info.Speedtest"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Computer_Support_Info"
+        mc:Ignorable="d"
+        Title="Speedtest" Height="450" Width="800">
+    <Grid x:Name="MainGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="TextOut" HorizontalAlignment="Left" Margin="25,25,25,25" TextWrapping="Wrap" Grid.Row="0" FontFamily="Consolas" FontSize="13" />
+        
+        <Button x:Name="BtnExit" Content="Dialog schließen" Margin="25" Click="BtnExit_Click" 
+                FontSize="16" Width="692" Grid.Row="1" VerticalAlignment="Bottom" ToolTip="Dialog schließen" />
+        
+    </Grid>
+</Window>
