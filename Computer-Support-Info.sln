@@ -1,13 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30503.244
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Computer-Support-Info", "Computer-Support-Info.csproj", "{B2205BD9-2EBA-488F-B967-8AEA40F25E1F}"
 EndProject
 Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "CSI-MSIX", "MSIX\CSI-MSIX\CSI-MSIX.wapproj", "{69B1E08F-543C-49DF-8BB9-72D790214005}"
-EndProject
-Project("{840C416C-B8F3-42BC-B0DD-F6BB14C9F8CB}") = "Installer", "Installer\Installer\Installer.aiproj", "{A54206EF-3DEF-41BD-921F-03F4BBDE15B5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -103,21 +101,6 @@ Global
 		{69B1E08F-543C-49DF-8BB9-72D790214005}.Release|x86.ActiveCfg = Release|x86
 		{69B1E08F-543C-49DF-8BB9-72D790214005}.Release|x86.Build.0 = Release|x86
 		{69B1E08F-543C-49DF-8BB9-72D790214005}.Release|x86.Deploy.0 = Release|x86
-		{A54206EF-3DEF-41BD-921F-03F4BBDE15B5}.All|Any CPU.ActiveCfg = DefaultBuild
-		{A54206EF-3DEF-41BD-921F-03F4BBDE15B5}.All|ARM.ActiveCfg = DefaultBuild
-		{A54206EF-3DEF-41BD-921F-03F4BBDE15B5}.All|ARM64.ActiveCfg = DefaultBuild
-		{A54206EF-3DEF-41BD-921F-03F4BBDE15B5}.All|x64.ActiveCfg = DefaultBuild
-		{A54206EF-3DEF-41BD-921F-03F4BBDE15B5}.All|x86.ActiveCfg = DefaultBuild
-		{A54206EF-3DEF-41BD-921F-03F4BBDE15B5}.Debug|Any CPU.ActiveCfg = DefaultBuild
-		{A54206EF-3DEF-41BD-921F-03F4BBDE15B5}.Debug|ARM.ActiveCfg = DefaultBuild
-		{A54206EF-3DEF-41BD-921F-03F4BBDE15B5}.Debug|ARM64.ActiveCfg = DefaultBuild
-		{A54206EF-3DEF-41BD-921F-03F4BBDE15B5}.Debug|x64.ActiveCfg = DefaultBuild
-		{A54206EF-3DEF-41BD-921F-03F4BBDE15B5}.Debug|x86.ActiveCfg = DefaultBuild
-		{A54206EF-3DEF-41BD-921F-03F4BBDE15B5}.Release|Any CPU.ActiveCfg = DefaultBuild
-		{A54206EF-3DEF-41BD-921F-03F4BBDE15B5}.Release|ARM.ActiveCfg = DefaultBuild
-		{A54206EF-3DEF-41BD-921F-03F4BBDE15B5}.Release|ARM64.ActiveCfg = DefaultBuild
-		{A54206EF-3DEF-41BD-921F-03F4BBDE15B5}.Release|x64.ActiveCfg = DefaultBuild
-		{A54206EF-3DEF-41BD-921F-03F4BBDE15B5}.Release|x86.ActiveCfg = DefaultBuild
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

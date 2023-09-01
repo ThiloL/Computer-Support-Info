@@ -36,6 +36,10 @@ using System.Reflection;
 using static Vanara.PInvoke.Gdi32;
 using System.Runtime.InteropServices;
 
+using WindowsDisplayAPI;
+using WindowsDisplayAPI.Native;
+using WindowsDisplayAPI.Native.DisplayConfig;
+using System.Threading;
 
 namespace Computer_Support_Info
 {
@@ -44,9 +48,10 @@ namespace Computer_Support_Info
     /// </summary>
     public partial class MainWindow : Window
     {
-        
+        CancellationTokenSource cts = null;
+        ParallelOptions po = null;
 
-        private BackgroundWorker background_worker = new BackgroundWorker();
+        private BackgroundWorker background_worker = null;
         public ViewModel vm;
 
         bool IsConnectedToInternet = false;
@@ -54,6 +59,11 @@ namespace Computer_Support_Info
         public MainWindow()
         {
             InitializeComponent();
+
+            cts = new CancellationTokenSource();
+            po = new ParallelOptions() { CancellationToken = cts.Token, MaxDegreeOfParallelism = System.Environment.ProcessorCount };
+
+            background_worker = new BackgroundWorker() { WorkerSupportsCancellation = true };
 
             this.Title += " (" + Assembly.GetExecutingAssembly().GetName().Version.ToString() + ")";
 
@@ -88,8 +98,10 @@ namespace Computer_Support_Info
         private void RepositionWindows()
         {
             Rect workArea = SystemParameters.WorkArea;
+            this.Height = workArea.Height / 1.25;
             this.Left = (workArea.Width - this.Width) / 2 + workArea.Left;
             this.Top = (workArea.Height - this.Height) / 2 + workArea.Top;
+            
         }
 
         private void Load2()
@@ -141,16 +153,30 @@ namespace Computer_Support_Info
 
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.WebcamDetails, number_prefix = "WC", number = 1, col = 3 });
 
-            Parallel.ForEach(th, one  =>
+            try
             {
-                List<SupportInfoElement> Results = LoadData(one.support_info_type, one.number, one.col);
-                foreach(SupportInfoElement sie in Results) AddGridItem(sie);
-            });
+
+                Parallel.ForEach(th, po, one =>
+                {
+                    List<SupportInfoElement> Results = LoadData(one.support_info_type, one.number, one.col);
+                    foreach (SupportInfoElement sie in Results) AddGridItem(sie);
+                });
+
+            }
+            catch (OperationCanceledException ex)
+            {
+                this.Close();
+            }
+            finally
+            {
+                cts.Dispose();
+            }
         }
 
         // add item(s) 
         private void AddGridItem(SupportInfoElement Item)
         {
+            if (System.Windows.Application.Current == null) return;
             System.Windows.Application.Current.Dispatcher.Invoke
             (
                 System.Windows.Threading.DispatcherPriority.Background,
@@ -168,6 +194,7 @@ namespace Computer_Support_Info
 
         private List<SupportInfoElement> LoadData(SupportInfotype sit, int number, int col, string number_prefix = "")
         {
+            
             if (sit == SupportInfotype.UserName)
             {
                 var user = WindowsIdentity.GetCurrent().Name;
@@ -910,21 +937,35 @@ namespace Computer_Support_Info
 
                 try
                 {
-                    ManagementClass cs = new ManagementClass("win32_videocontroller");
-                    ManagementObjectCollection moc = cs.GetInstances();
-                    if (moc.Count != 0)
+                    DisplayAdapter[] all_da = DisplayAdapter.GetDisplayAdapters().ToArray();
+                    foreach (DisplayAdapter one_da in all_da)
                     {
-                        foreach (ManagementObject MO in cs.GetInstances())
-                        {
-                            G.Add(new GraphicsAdapter()
-                            {
-                                Name = MO.Properties["Name"].Value.ToString(),
-                                DriverVersion = MO.Properties["DriverVersion"].Value.ToString()
-                            });
-                        }
+                        var x = one_da.ToPathDisplayAdapter();
+                        G.Add(new GraphicsAdapter() { Name = one_da.DeviceName });
                     }
-                }
-                catch { }
+                } catch { }
+
+
+                //DisplayAdapter[] da = ;
+
+
+                //try
+                //{
+                //    ManagementClass cs = new ManagementClass("win32_videocontroller");
+                //    ManagementObjectCollection moc = cs.GetInstances();
+                //    if (moc.Count != 0)
+                //    {
+                //        foreach (ManagementObject MO in cs.GetInstances())
+                //        {
+                //            G.Add(new GraphicsAdapter()
+                //            {
+                //                Name = MO.Properties["Name"].Value.ToString(),
+                //                DriverVersion = MO.Properties["DriverVersion"].Value.ToString()
+                //            });
+                //        }
+                //    }
+                //}
+                //catch { }
 
                 return new List<SupportInfoElement> {
                     new SupportInfoElement() {
@@ -949,73 +990,102 @@ namespace Computer_Support_Info
 
                 List<DisplayDevice> DisplayDevices = new List<DisplayDevice>();
 
-                // display devices structure
-                DISPLAY_DEVICE dd = new DISPLAY_DEVICE();
-                dd.cb = (uint)Marshal.SizeOf(dd);
-
-                for(uint id=0; Vanara.PInvoke.User32.EnumDisplayDevices(null, id, ref dd, 0 ); id++)
-                {
-                    if (dd.StateFlags.HasFlag(DISPLAY_DEVICE_FLAGS.DISPLAY_DEVICE_ACTIVE))
-                    {
-                        string did = dd.DeviceID;
-                        string name = dd.DeviceName;
-                        string displaystring = dd.DeviceString;
-
-                        Vanara.PInvoke.User32.EnumDisplayDevices(dd.DeviceName, 0, ref dd, 0);
-
-                        string monitor = dd.DeviceString;
-
-                        DisplayDevices.Add(new DisplayDevice()
-                        {
-                            ID = did,
-                            Name = name,
-                            DisplayString = displaystring,
-                            Monitor = monitor
-                        });
-                    }
-                }
-
-                // device mode structure
-                DEVMODE dm = new DEVMODE();
-
-                foreach (DisplayDevice DispDev in DisplayDevices)
-                {
-
-                    bool ret = Vanara.PInvoke.User32.EnumDisplaySettings(DispDev.Name, Vanara.PInvoke.User32.ENUM_CURRENT_SETTINGS, ref dm);
-
-                    if (ret)
-                    {
-                        DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.BitsPerPel = (int)dm.dmBitsPerPel;
-                        DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.DisplayFrequency = (int)dm.dmDisplayFrequency;
-                        DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.PelsWidth = (int)dm.dmPelsWidth;
-                        DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.PelsHeight = (int)dm.dmPelsHeight;
-                    }
-                }
-
-                string display_info = string.Join("\n", DisplayDevices.Select(x => x.ToString()));
+                // new
+                Display[] all_displays = Display.GetDisplays().ToArray();
 
                 try
                 {
-                    ManagementClass cs = new ManagementClass("win32_desktopmonitor");
-                    ManagementObjectCollection moc = cs.GetInstances();
-                    if (moc.Count != 0)
+                    foreach( Display d in all_displays)
                     {
-                        foreach (ManagementObject MO in cs.GetInstances())
+                        var d1 = d.ToPathDisplaySource();
+                        var d2 = d.ToPathDisplayTarget();
+
+                        D.Add(new DisplayInfo()
                         {
-                            D.Add(new DisplayInfo()
-                            {
-                                Manufacturer = MO.Properties["MonitorManufacturer"].Value != null ? MO.Properties["MonitorManufacturer"].Value.ToString() : string.Empty,
-                                Name = MO.Properties["MonitorType"].Value != null ? MO.Properties["MonitorType"].Value.ToString() : string.Empty
-                            });
-                        }
+                            Name = d2.FriendlyName,
+                            ResX = d.CurrentSetting.Resolution.Width,
+                            ResY = d.CurrentSetting.Resolution.Height,
+                            Frequency = d.CurrentSetting.Frequency,
+                            Dpi = d1.CurrentDPIScale.ToString() 
+                        });
+
                     }
                 }
                 catch { }
 
+
+
+
+
+
+
+                //// display devices structure
+                //DISPLAY_DEVICE dd = new DISPLAY_DEVICE();
+                //dd.cb = (uint)Marshal.SizeOf(dd);
+
+                //for(uint id=0; Vanara.PInvoke.User32.EnumDisplayDevices(null, id, ref dd, 0 ); id++)
+                //{
+                //    if (dd.StateFlags.HasFlag(DISPLAY_DEVICE_FLAGS.DISPLAY_DEVICE_ACTIVE))
+                //    {
+                //        string did = dd.DeviceID;
+                //        string name = dd.DeviceName;
+                //        string displaystring = dd.DeviceString;
+
+                //        Vanara.PInvoke.User32.EnumDisplayDevices(dd.DeviceName, 0, ref dd, 0);
+
+                //        string monitor = dd.DeviceString;
+
+                //        DisplayDevices.Add(new DisplayDevice()
+                //        {
+                //            ID = did,
+                //            Name = name,
+                //            DisplayString = displaystring,
+                //            Monitor = monitor
+                //        });
+                //    }
+                //}
+
+                // device mode structure
+                //DEVMODE dm = new DEVMODE();
+
+                //foreach (DisplayDevice DispDev in DisplayDevices)
+                //{
+
+                //    bool ret = Vanara.PInvoke.User32.EnumDisplaySettings(DispDev.Name, Vanara.PInvoke.User32.ENUM_CURRENT_SETTINGS, ref dm);
+
+                //    if (ret)
+                //    {
+                //        DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.BitsPerPel = (int)dm.dmBitsPerPel;
+                //        DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.DisplayFrequency = (int)dm.dmDisplayFrequency;
+                //        DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.PelsWidth = (int)dm.dmPelsWidth;
+                //        DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.PelsHeight = (int)dm.dmPelsHeight;
+                //    }
+                //}
+
+                //string display_info = string.Join("\n", DisplayDevices.Select(x => x.ToString()));
+
+                //try
+                //{
+                //    ManagementClass cs = new ManagementClass("win32_desktopmonitor");
+                //    ManagementObjectCollection moc = cs.GetInstances();
+                //    if (moc.Count != 0)
+                //    {
+                //        foreach (ManagementObject MO in cs.GetInstances())
+                //        {
+                //            D.Add(new DisplayInfo()
+                //            {
+                //                Manufacturer = MO.Properties["MonitorManufacturer"].Value != null ? MO.Properties["MonitorManufacturer"].Value.ToString() : string.Empty,
+                //                Name = MO.Properties["MonitorType"].Value != null ? MO.Properties["MonitorType"].Value.ToString() : string.Empty
+                //            });
+                //        }
+                //    }
+                //}
+                //catch { }
+
                 return new List<SupportInfoElement> {
                     new SupportInfoElement() {
                         Name = "Monitor",
-                        Value = string.Join("\n", D.Select(x => x.ToString())) + "\n" + display_info,
+                        Value = string.Join("\n", D.Select(x => x.ToString())),
                         Number = number,
                         Column = col
                     }
@@ -1051,8 +1121,13 @@ namespace Computer_Support_Info
 
         private void BtnExit_Click(object sender, RoutedEventArgs e)
         {
-            background_worker.CancelAsync();
-            System.Windows.Application.Current.Shutdown();
+            try
+            {
+                cts.Cancel();
+            }
+            catch { }
+            
+            this.Close();
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
@@ -1098,6 +1173,15 @@ namespace Computer_Support_Info
         {
             WindowsUpdates WindowsUpdatesWindow = new WindowsUpdates();
             WindowsUpdatesWindow.ShowDialog();
+        }
+
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            try
+            {
+                cts.Cancel();
+            }
+            catch { }
         }
     }
 }

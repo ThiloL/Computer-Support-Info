@@ -8,13 +8,26 @@ namespace Computer_Support_Info
 {
     class DisplayInfo
     {
-        public string Manufacturer { get; set; }
         public string Name { get; set; }
+
+        public int ResX { get; set; }
+
+        public int ResY { get; set; }
+
+        public int Frequency { get; set; }
+
+        public string Dpi { get; set; }
+
 
         public override string ToString()
         {
-            if (string.IsNullOrEmpty(Manufacturer)) return Name.Trim();
-            return string.Format("{0} {1}", Manufacturer.Trim(), Name.Trim());
+            return string.Format("{0}, {1}x{2} px, {3} Hz, {4}", 
+                Name.Trim()
+                ,ResX.ToString()
+                ,ResY.ToString()
+                ,Frequency.ToString()
+                ,Dpi
+            );
         }
     }
 }

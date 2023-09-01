@@ -9,11 +9,11 @@ namespace Computer_Support_Info
     class GraphicsAdapter
     {
         public string Name { get; set; }
-        public string DriverVersion { get; set; }
+        //public string DriverVersion { get; set; }
 
         public override string ToString()
         {
-            return string.Format("{0} | Treiber: {1}", Name, DriverVersion);
+            return string.Format("{0}", Name);
 
         }
     }
