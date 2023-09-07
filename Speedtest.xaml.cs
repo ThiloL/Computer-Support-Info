@@ -28,11 +28,13 @@ namespace Computer_Support_Info
 
             Rect workArea = SystemParameters.WorkArea;
 
-            this.Height = workArea.Height / 3;
+            this.Height = workArea.Height / 2;
             this.Width = workArea.Width / 2;
 
             this.Left = (workArea.Width - this.Width) / 2 + workArea.Left;
             this.Top = (workArea.Height - this.Height) / 2 + workArea.Top;
+
+            MainGrid.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFD8E8E5"));
         }
 
         private void BtnExit_Click(object sender, RoutedEventArgs e)

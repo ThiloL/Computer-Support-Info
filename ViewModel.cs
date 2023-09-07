@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
@@ -19,6 +20,19 @@ namespace Computer_Support_Info
         {
             get ;
             private set ;
+        }
+
+        private string _ComputerName;
+        public string ComputerName
+        {
+            get { 
+                return _ComputerName;
+            }
+            set
+            {
+                _ComputerName = value;
+                RaisePropertyChanged();
+            }
         }
 
         public ViewModel()
@@ -74,7 +88,7 @@ namespace Computer_Support_Info
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private void RaisePropertyChanged(string propertyName)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             var handler = PropertyChanged;
             if (handler == null) return;

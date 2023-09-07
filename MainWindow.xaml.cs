@@ -40,6 +40,8 @@ using WindowsDisplayAPI;
 using WindowsDisplayAPI.Native;
 using WindowsDisplayAPI.Native.DisplayConfig;
 using System.Threading;
+using static Vanara.PInvoke.Kernel32.DISK_PARTITION_INFO;
+using NAudio;
 
 namespace Computer_Support_Info
 {
@@ -98,7 +100,10 @@ namespace Computer_Support_Info
         private void RepositionWindows()
         {
             Rect workArea = SystemParameters.WorkArea;
-            this.Height = workArea.Height / 1.25;
+            
+            this.Height = workArea.Height - (workArea.Height * 0.1);
+            this.Width = workArea.Width - (workArea.Width * 0.1);
+
             this.Left = (workArea.Width - this.Width) / 2 + workArea.Left;
             this.Top = (workArea.Height - this.Height) / 2 + workArea.Top;
             
@@ -111,6 +116,10 @@ namespace Computer_Support_Info
 
         public class Taskhelper
         {
+            public bool IsPlainText{ get; set;} 
+
+            public string Plaintext { get; set;}
+
             public SupportInfotype support_info_type { get; set; }
             public int number { get; set; }
 
@@ -125,7 +134,7 @@ namespace Computer_Support_Info
             List<Taskhelper> th = new List<Taskhelper>();
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.UserName, number = no++, col = 1 });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.IsAdmin, number = no++, col = 1 });
-            th.Add(new Taskhelper() { support_info_type = SupportInfotype.ComputerName, number = no++, col = 1 });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.ComputerName, number = no++, col = 1, IsPlainText = true });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.OperatingSystem, number = no++, col = 1 });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.ComputerManufacturer, number = no++, col = 1 });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.ComputerModel, number = no++, col = 1 });
@@ -159,7 +168,11 @@ namespace Computer_Support_Info
                 Parallel.ForEach(th, po, one =>
                 {
                     List<SupportInfoElement> Results = LoadData(one.support_info_type, one.number, one.col);
-                    foreach (SupportInfoElement sie in Results) AddGridItem(sie);
+                    if (one.IsPlainText)
+                    {
+                        if (one.support_info_type == SupportInfotype.ComputerName) vm.ComputerName = Results[0].Value;
+                    }
+                    else foreach (SupportInfoElement sie in Results) AddGridItem(sie);
                 });
 
             }
@@ -271,20 +284,32 @@ namespace Computer_Support_Info
 
             if (sit == SupportInfotype.ComputerName)
             {
-                return new List<SupportInfoElement> {
-                    new SupportInfoElement() {
-                        Name = "Computername",
-                        Value = Environment.MachineName,
-                        Number = number,
-                        Column = col 
-                    }
-                };
+                return new List<SupportInfoElement> { new SupportInfoElement() { Value = Environment.MachineName } };
+                //return new List<SupportInfoElement> {
+                //    new SupportInfoElement() {
+                //        Name = "Computername",
+                //        Value = Environment.MachineName,
+                //        Number = number,
+                //        Column = col 
+                //    }
+                //};
             }
 
             if (sit == SupportInfotype.OperatingSystem)
             {
-                var versionString = (string)Microsoft.Win32.Registry.LocalMachine.OpenSubKey("Software\\Microsoft\\Windows NT\\CurrentVersion")?.GetValue("productName");
-                var releaseID = (string)Microsoft.Win32.Registry.LocalMachine.OpenSubKey("Software\\Microsoft\\Windows NT\\CurrentVersion")?.GetValue("ReleaseID");
+                var versionString = string.Empty;
+
+                ManagementClass cs = new ManagementClass("Win32_OperatingSystem");
+                ManagementObjectCollection moc = cs.GetInstances();
+                if (moc.Count != 0)
+                {
+                    foreach (ManagementObject MO in cs.GetInstances())
+                    {
+                        versionString = MO.Properties["Caption"].Value.ToString();
+                    }
+                }
+
+                var releaseID = (string)Microsoft.Win32.Registry.LocalMachine.OpenSubKey("Software\\Microsoft\\Windows NT\\CurrentVersion")?.GetValue("DisplayVersion");
                 var x64 = Environment.Is64BitOperatingSystem ? "x64" : "x86";
 
                 List<SupportInfoElement> O = new List<SupportInfoElement>();
@@ -370,6 +395,7 @@ namespace Computer_Support_Info
             if (sit == SupportInfotype.ComputerModel)
             {
                 string model = string.Empty;
+                string model2 = string.Empty;
 
                 try
                 {
@@ -385,13 +411,23 @@ namespace Computer_Support_Info
                         }
                     }
 
+                    ManagementClass cs2 = new ManagementClass("win32_computersystem");
+                    ManagementObjectCollection moc2 = cs.GetInstances();
+                    if (moc2.Count != 0)
+                    {
+                        foreach (ManagementObject MO in cs2.GetInstances())
+                        {
+                            model2 = MO.Properties["Model"].Value.ToString();
+                        }
+                    }
+
                 }
                 catch { }
 
                 return new List<SupportInfoElement> {
                     new SupportInfoElement() {
                         Name = "Modell",
-                        Value =model,
+                        Value = string.Format("{0} | {1}", model, model2),
                         Number = number,
                         Column = col 
                     }
@@ -1147,6 +1183,7 @@ namespace Computer_Support_Info
                     LoadUserProfile = false,
                     Arguments = Properties.Settings.Default.speedtest_parameters,
                     RedirectStandardOutput = true,
+                    StandardOutputEncoding = Encoding.UTF8,
                     CreateNoWindow = true
                 };
 
