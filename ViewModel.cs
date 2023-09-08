@@ -35,6 +35,9 @@ namespace Computer_Support_Info
             }
         }
 
+
+
+
         public ViewModel()
         {
             this.SupportInfoData = new ObservableCollection<SupportInfoElement>();

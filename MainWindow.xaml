@@ -8,7 +8,7 @@
         Title="Computer-Support-Info" Height="650" Width="660"  
         WindowStartupLocation="CenterScreen" MinWidth="800" MinHeight="650" FontSize="13" Closing="Window_Closing"
         >
-    
+
     <Window.Resources>
         <Style TargetType="{x:Type DataGridCell}">
             <Setter Property="Padding" Value="0,0,10,20" />
@@ -39,8 +39,14 @@
             <Label x:Name="ComputerName" Background="Black" Padding="20,0,0,20" Content="{Binding Path=ComputerName, UpdateSourceTrigger=PropertyChanged}" Foreground="White" FontWeight="Bold" FontSize="24"  />
         </StackPanel>
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.Row="2" Grid.Column="0" >
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.Row="2" Grid.Column="0"  Padding="15">
             <StackPanel>
+
+                <local:GridWithHeader x:Name="USER" Height="120" />
+                <local:GridWithHeader x:Name="OS" Height="108" />
+
+
+
                 <Label Content="Benutzer/Betriebssystem/Computer/Netzwerk" Background="#FFC8C8C8" Margin="5,5,5,0" FontWeight="Bold" />
                 <DataGrid x:Name="SupportInfosGrid1" ItemsSource="{Binding Path=ViewSource1.View}" IsSynchronizedWithCurrentItem="True" 
                           AutoGenerateColumns="False" CanUserSortColumns="False" 
@@ -123,11 +129,11 @@
 
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.Row="2" Grid.Column="2">
             <StackPanel VerticalAlignment="Top">
-                
+
             </StackPanel>
         </ScrollViewer>
 
 
         <Button x:Name="BtnExit" Content="Exit" Margin="25" Click="BtnExit_Click" FontSize="16" Width="692" Grid.Row="3" Grid.ColumnSpan="2" VerticalAlignment="Bottom" ToolTip="Anwendung beenden" />
-        </Grid>
+    </Grid>
 </Window>

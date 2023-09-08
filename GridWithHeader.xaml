@@ -1,0 +1,58 @@
+﻿<UserControl x:Class="Computer_Support_Info.GridWithHeader"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Computer_Support_Info"
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             mc:Ignorable="d"
+             VerticalAlignment="Stretch"
+             d:DesignHeight="450" d:DesignWidth="800" >
+
+    <UserControl.Resources>
+        <CollectionViewSource x:Key="SortedList" Source="{Binding ListOfValues}">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="Oder" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+    </UserControl.Resources>
+    
+    <Grid VerticalAlignment="Stretch" Margin="0,0,0,15">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        
+        <Label Grid.Row="0" Background="#FFF3CB01" 
+               FontWeight="Bold" FontSize="14" Padding="10,5,10,5"
+               Content="{Binding Title}" />
+        
+        <DataGrid ItemsSource="{Binding ListOfValues}" IsSynchronizedWithCurrentItem="True" 
+          AutoGenerateColumns="False" CanUserSortColumns="False" Grid.Row="1"
+            Margin="0" DockPanel.Dock="Top" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="2*"/>
+                <DataGridTextColumn Header="Wert" Binding="{Binding Value}" Width="7*"/>
+                <DataGridTextColumn Header="Order" Binding="{Binding Order}" Width="Auto" Visibility="Hidden"/>
+            </DataGrid.Columns>
+
+            <DataGrid.HorizontalGridLinesBrush>
+                <SolidColorBrush Color="#25000000"/>
+            </DataGrid.HorizontalGridLinesBrush>
+
+            <DataGrid.Resources>
+                <Style TargetType="{x:Type DataGridRow}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding MakeBold}" Value="True">
+                            <Setter Property="FontWeight" Value="Bold" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.Resources>
+        </DataGrid>
+
+    </Grid>
+   
+    
+</UserControl>
