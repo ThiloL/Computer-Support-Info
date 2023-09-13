@@ -4,8 +4,6 @@
              xmlns:local="clr-namespace:Computer_Support_Info"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <Style TargetType="DataGridCell">
-            <Setter Property="Padding" Value="0,0,10,20" />
-        </Style>
+        
     </Application.Resources>
 </Application>

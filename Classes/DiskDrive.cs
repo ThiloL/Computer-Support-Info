@@ -15,6 +15,8 @@ namespace Computer_Support_Info
         public string SerialNumber { get; set; }
         public Int64 Size { get; set;}
 
+        public string Firmware { get; set; }
+
         public string DiskSizeText { 
             get {
                 return Size.Bytes().Humanize("#.#");
@@ -23,7 +25,7 @@ namespace Computer_Support_Info
 
         public override string ToString()
         {
-            return string.Format("{0} | {1} | Serien-Nr.: {2} | Größe: {3}", Index, Caption.Trim(), SerialNumber.Trim(), DiskSizeText);
+            return string.Format("{0} | {1} | Serien-Nr.: {2} | Firmware: {3} | Größe: {4}", Index, Caption.Trim(), SerialNumber.Trim(), Firmware.Trim(), DiskSizeText);
         }
 
     }

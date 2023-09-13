@@ -6,15 +6,16 @@
              xmlns:local="clr-namespace:Computer_Support_Info"
              xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              mc:Ignorable="d"
-             VerticalAlignment="Stretch"
+             HorizontalAlignment="Stretch"
              d:DesignHeight="450" d:DesignWidth="800" >
 
     <UserControl.Resources>
         <CollectionViewSource x:Key="SortedList" Source="{Binding ListOfValues}">
             <CollectionViewSource.SortDescriptions>
-                <scm:SortDescription PropertyName="Oder" />
+                <scm:SortDescription PropertyName="Order" />
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
+
     </UserControl.Resources>
     
     <Grid VerticalAlignment="Stretch" Margin="0,0,0,15">
@@ -23,18 +24,56 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+
+
         
         <Label Grid.Row="0" Background="#FFF3CB01" 
                FontWeight="Bold" FontSize="14" Padding="10,5,10,5"
                Content="{Binding Title}" />
         
-        <DataGrid ItemsSource="{Binding ListOfValues}" IsSynchronizedWithCurrentItem="True" 
-          AutoGenerateColumns="False" CanUserSortColumns="False" Grid.Row="1"
-            Margin="0" DockPanel.Dock="Top" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
+        <DataGrid ItemsSource="{Binding Source={StaticResource SortedList}}"
+                  HorizontalAlignment="Stretch"
+          AutoGenerateColumns="False" CanUserSortColumns="False" Grid.Row="1" 
+            Margin="0" DockPanel.Dock="Top" GridLinesVisibility="Horizontal" RowHeaderWidth="0" IsReadOnly="True">
+
+            <DataGrid.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}">
+                    <Setter Property="Padding" Value="5,2,5,2" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                <Border Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" 
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                                    <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.CellStyle>
+
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="{x:Type DataGridColumnHeader}">
+                    <Setter Property="Padding" Value="7,2,5,5" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
+                                <Border Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" 
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                                    <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>                
+            </DataGrid.ColumnHeaderStyle>
+
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="2*"/>
-                <DataGridTextColumn Header="Wert" Binding="{Binding Value}" Width="7*"/>
-                <DataGridTextColumn Header="Order" Binding="{Binding Order}" Width="Auto" Visibility="Hidden"/>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+                <DataGridTextColumn Header="Wert" Binding="{Binding Value}" />
+                <DataGridTextColumn Header="Order" Binding="{Binding Order}" Visibility="Hidden"/>
             </DataGrid.Columns>
 
             <DataGrid.HorizontalGridLinesBrush>
@@ -49,6 +88,7 @@
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
+                
             </DataGrid.Resources>
         </DataGrid>
 

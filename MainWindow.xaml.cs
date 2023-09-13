@@ -42,6 +42,7 @@ using WindowsDisplayAPI.Native.DisplayConfig;
 using System.Threading;
 using static Vanara.PInvoke.Kernel32.DISK_PARTITION_INFO;
 using NAudio;
+using System.Windows.Media.Media3D;
 
 namespace Computer_Support_Info
 {
@@ -61,6 +62,10 @@ namespace Computer_Support_Info
 
         GridWithHeaderData User = new GridWithHeaderData("Benutzer");
         GridWithHeaderData Os = new GridWithHeaderData("Betriebssystem");
+        GridWithHeaderData Computer = new GridWithHeaderData("Computer");
+        GridWithHeaderData Network = new GridWithHeaderData("Netzwerk");
+        GridWithHeaderData DiskP = new GridWithHeaderData("Laufwerke (physísch)");
+        GridWithHeaderData DiskL = new GridWithHeaderData("Laufwerke (logisch)");
 
         public MainWindow()
         {
@@ -68,6 +73,10 @@ namespace Computer_Support_Info
 
             USER.DataContext = User;
             OS.DataContext = Os;
+            COMPUTER.DataContext = Computer;
+            DISK_PHYSICAL.DataContext = DiskP;
+            DISK_LOGICAL.DataContext = DiskL;
+            NETWORK.DataContext = Network;
 
             cts = new CancellationTokenSource();
             po = new ParallelOptions() { CancellationToken = cts.Token, MaxDegreeOfParallelism = System.Environment.ProcessorCount };
@@ -93,9 +102,9 @@ namespace Computer_Support_Info
 
         private void Background_worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            SupportInfosGrid1.Items.Refresh();
-            SupportInfosGrid2.Items.Refresh();
-            SupportInfosGrid3.Items.Refresh();
+            //SupportInfosGrid1.Items.Refresh();
+            //SupportInfosGrid2.Items.Refresh();
+            //SupportInfosGrid3.Items.Refresh();
 
             MainGrid.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFD8E8E5"));
             Mouse.OverrideCursor = null;
@@ -136,38 +145,47 @@ namespace Computer_Support_Info
             public GridWithHeaderData gwhd { get; set; }
         }
 
+        private int Add10(ref int number)
+        {
+            number += 10;
+            return number;
+        }
+
         private void Background_worker_DoWork(object sender, DoWorkEventArgs e)
         {
             int no = 1;
 
             List<Taskhelper> th = new List<Taskhelper>();
             
-            th.Add(new Taskhelper() { support_info_type = SupportInfotype.UserName, number = no++, col = 1, gwhd = User });
-            th.Add(new Taskhelper() { support_info_type = SupportInfotype.IsAdmin, number = no++, col = 1, gwhd = User });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.UserName, number = Add10(ref no), col = 1, gwhd = User });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.IsAdmin, number = Add10(ref no), col = 1, gwhd = User });
             
             
             //th.Add(new Taskhelper() { support_info_type = SupportInfotype.ComputerName, number = no++, col = 1, IsPlainText = true });
             
-            th.Add(new Taskhelper() { support_info_type = SupportInfotype.OperatingSystem, number = no++, col = 1, gwhd = Os });
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.ComputerManufacturer, number = no++, col = 1 });
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.ComputerModel, number = no++, col = 1 });
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.Firmware, number = no++, col = 1 });
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.SerialBaseboard, number = no++, col = 1 });
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.SerialBios, number = no++, col = 1 });
-
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.CPU, number = no++, col = 1 });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.OperatingSystem, number = Add10(ref no), col = 1, gwhd = Os });
             
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.Memory, number = no++, col = 1 });
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.Network, number = no++, col = 1 });
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.Ping, number = no++, col = 1 });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.ComputerManufacturer, number = Add10(ref no), col = 1, gwhd = Computer });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.ComputerModel, number = Add10(ref no), col = 1, gwhd = Computer });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.Firmware, number = Add10(ref no), col = 1, gwhd = Computer });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.SerialBaseboard, number = Add10(ref no), col = 1, gwhd = Computer });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.SerialBios, number = Add10(ref no), col = 1, gwhd = Computer });
+
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.CPU, number = Add10(ref no), col = 1, gwhd = Computer });
+            
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.Memory, number = Add10(ref no), col = 1, gwhd = Computer });
+            
+            
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.Network, number = Add10(ref no), col = 1, gwhd = Network });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.Ping, number = Add10(ref no), col = 1, gwhd = Network });
             
             //th.Add(new Taskhelper() { support_info_type = SupportInfotype.Bitlocker, number = no++, col = 1 });
 
             //th.Add(new Taskhelper() { support_info_type = SupportInfotype.GraphicsCard, number = no++, col = 2 });
             //th.Add(new Taskhelper() { support_info_type = SupportInfotype.Display, number = no++, col = 2 });
 
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.PhysicalDrives, number = no++, col = 2 });
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.LogicalDrives, number = no++, col = 2 });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.PhysicalDrives, number = Add10(ref no), col = 2 , gwhd = DiskP });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.LogicalDrives, number = Add10(ref no), col = 2, gwhd = DiskL });
 
             //th.Add(new Taskhelper() { support_info_type = SupportInfotype.Webcam, number = no++, col = 2 });
             //th.Add(new Taskhelper() { support_info_type = SupportInfotype.AudioOutDevices, number = no++, col = 2 });
@@ -182,6 +200,9 @@ namespace Computer_Support_Info
                 {
                     // List<SupportInfoElement> Results = LoadData(one.support_info_type, one.number, one.col);
                     List<NameAndValue> Results = LoadData(one.support_info_type, one.number, one.col);
+
+                    if (Results == null) return;
+
                     if (one.IsPlainText)
                     {
                         if (one.support_info_type == SupportInfotype.ComputerName) vm.ComputerName = Results[0].Value;
@@ -414,460 +435,534 @@ namespace Computer_Support_Info
                 return O;
             }
 
-            //if (sit == SupportInfotype.ComputerManufacturer)
-            //{
-            //    string manufacturer = string.Empty;
-
-            //    try
-            //    {
-
-
-            //        ManagementClass cs = new ManagementClass("win32_baseboard");
-            //        ManagementObjectCollection moc = cs.GetInstances();
-            //        if (moc.Count != 0)
-            //        {
-            //            foreach (ManagementObject MO in cs.GetInstances())
-            //            {
-            //                manufacturer = MO.Properties["Manufacturer"].Value.ToString();
-            //            }
-            //        }
-
-            //    }
-            //    catch { }
-
-            //    return new List<SupportInfoElement> {
-            //        new SupportInfoElement() {
-            //            Name = "Hersteller",
-            //            Value = manufacturer,
-            //            Number = number,
-            //            Column = col 
-            //        }
-            //    };
-
-            //}
-
-            //if (sit == SupportInfotype.ComputerModel)
-            //{
-            //    string model = string.Empty;
-            //    string model2 = string.Empty;
-
-            //    try
-            //    {
-
-
-            //        ManagementClass cs = new ManagementClass("win32_baseboard");
-            //        ManagementObjectCollection moc = cs.GetInstances();
-            //        if (moc.Count != 0)
-            //        {
-            //            foreach (ManagementObject MO in cs.GetInstances())
-            //            {
-            //                model = MO.Properties["Product"].Value.ToString();
-            //            }
-            //        }
-
-            //        ManagementClass cs2 = new ManagementClass("win32_computersystem");
-            //        ManagementObjectCollection moc2 = cs.GetInstances();
-            //        if (moc2.Count != 0)
-            //        {
-            //            foreach (ManagementObject MO in cs2.GetInstances())
-            //            {
-            //                model2 = MO.Properties["Model"].Value.ToString();
-            //            }
-            //        }
-
-            //    }
-            //    catch { }
-
-            //    return new List<SupportInfoElement> {
-            //        new SupportInfoElement() {
-            //            Name = "Modell",
-            //            Value = string.Format("{0} | {1}", model, model2),
-            //            Number = number,
-            //            Column = col 
-            //        }
-            //    };
-
-            //}
-
-            //if (sit == SupportInfotype.SerialBaseboard)
-            //{
-            //    string serial = string.Empty;
-
-            //    try
-            //    {
-            //        ManagementClass cs = new ManagementClass("win32_baseboard");
-            //        ManagementObjectCollection moc = cs.GetInstances();
-            //        if (moc.Count != 0)
-            //        {
-            //            foreach (ManagementObject MO in cs.GetInstances())
-            //            {
-            //                serial = MO.Properties["SerialNumber"].Value.ToString();
-            //            }
-            //        }
-            //    }
-            //    catch { }
-
-            //    return new List<SupportInfoElement> {
-            //        new SupportInfoElement() {
-            //            Name = "Serien-Nummer (Baseboard)",
-            //            Value = $"{serial}",
-            //            Number = number,
-            //            Column = col 
-            //        }
-            //    };
-            //}
-
-            //if (sit == SupportInfotype.SerialBios)
-            //{
-            //    string serial = string.Empty;
-
-            //    try
-            //    {
-            //        ManagementClass cs = new ManagementClass("win32_bios");
-            //        ManagementObjectCollection moc = cs.GetInstances();
-            //        if (moc.Count != 0)
-            //        {
-            //            foreach (ManagementObject MO in cs.GetInstances())
-            //            {
-            //                serial = MO.Properties["SerialNumber"].Value.ToString();
-            //            }
-            //        }
-            //    }
-            //    catch { }
-
-            //    return new List<SupportInfoElement> {
-            //        new SupportInfoElement() {
-            //            Name = "Serien-Nummer (BIOS)",
-            //            Value = $"{serial}",
-            //            Number = number,
-            //            Column = col
-            //        }
-            //    };
-            //}
-
-            //if (sit == SupportInfotype.CPU)
-            //{
-            //    string cpu = string.Empty;
-            //    try
-            //    {
-
-
-            //        ManagementClass cs = new ManagementClass("win32_processor");
-            //        ManagementObjectCollection moc = cs.GetInstances();
-            //        if (moc.Count != 0)
-            //        {
-            //            foreach (ManagementObject MO in cs.GetInstances())
-            //            {
-            //                cpu = MO.Properties["Name"].Value.ToString();
-            //            }
-            //        }
-            //    }
-            //    catch { }
-
-            //    return new List<SupportInfoElement> {
-            //        new SupportInfoElement() {
-            //            Name = "CPU",
-            //            Value = cpu,
-            //            Number = number,
-            //            Column = col 
-            //        }
-            //    };
-            //}
-
-            //if (sit == SupportInfotype.Firmware)
-            //{
-            //    // Firmware
-
-            //    string bios_manufacturer = string.Empty;
-            //    string bios_version = string.Empty;
-            //    DateTime bios_datetime = DateTime.MinValue;
-
-            //    try
-            //    {
-
-
-            //        ManagementClass cs = new ManagementClass("win32_bios");
-            //        ManagementObjectCollection moc = cs.GetInstances();
-            //        if (moc.Count != 0)
-            //        {
-            //            foreach (ManagementObject MO in cs.GetInstances())
-            //            {
-            //                bios_manufacturer = MO.Properties["Manufacturer"].Value.ToString();
-            //                bios_version = MO.Properties["SMBIOSBIOSVersion"].Value.ToString();
-            //                bios_datetime = ManagementDateTimeConverter.ToDateTime(MO.Properties["ReleaseDate"].Value.ToString());
-            //            }
-            //        }
-            //    }
-            //    catch { }
-
-            //    List<SupportInfoElement> F = new List<SupportInfoElement>();
-
-            //    int N = 1;
-
-            //    F.Add(new SupportInfoElement()
-            //    {
-            //        Name = "Firmware-Hersteller",
-            //        Value = bios_manufacturer,
-            //        Number = number,
-            //        SubNumber = N++,
-            //        Column = col
-            //    });
-
-            //    F.Add(new SupportInfoElement()
-            //    {
-            //        Name = "-Version",
-            //        Value = bios_version,
-            //        Number = number,
-            //        SubNumber = N++,
-            //        Column = col
-            //    });
-
-            //    F.Add(new SupportInfoElement()
-            //    {
-            //        Name = "-Datum",
-            //        Value = bios_datetime.ToString("dd.MM.yyyy"),
-            //        Number = number,
-            //        SubNumber = N++,
-            //        Column = col
-            //    });
-
-            //    return F;
-
-            //}
-
-            //if (sit == SupportInfotype.Memory)
-            //{
-            //    // RAM
-
-            //    string ram = string.Empty;
-
-            //    try
-            //    {
-
-
-            //        ManagementClass cs = new ManagementClass("Win32_OperatingSystem");
-            //        ManagementObjectCollection moc = cs.GetInstances();
-            //        if (moc.Count != 0)
-            //        {
-            //            foreach (ManagementObject MO in cs.GetInstances())
-            //            {
-            //                ram = Convert.ToInt64(MO.Properties["TotalVisibleMemorySize"].Value).Kilobytes().Humanize("#.#");
-            //            }
-            //        }
-            //    }
-            //    catch { }
-
-            //    return new List<SupportInfoElement> {
-            //        new SupportInfoElement() {
-            //            Name = "RAM",
-            //            Value = ram,
-            //            Number = number,
-            //            Column = col
-            //        }
-            //    };
-            //}
-
-            //if (sit == SupportInfotype.PhysicalDrives)
-            //{
-            //    // physical disk drives
-
-            //    List<DiskDrive> DiskDrives = new List<DiskDrive>();
-
-            //    string disk_info = string.Empty;
-
-            //    try
-            //    {
-            //        string caption = string.Empty;
-            //        string size_text = string.Empty;
-
-            //        ManagementClass cs = new ManagementClass("win32_diskdrive");
-            //        ManagementObjectCollection moc = cs.GetInstances();
-            //        if (moc.Count != 0)
-            //        {
-            //            foreach (ManagementObject MO in cs.GetInstances())
-            //            {
-            //                var type = MO.Properties["MediaType"]?.Value?.ToString();
-
-            //                if (type == null) continue;
-            //                if (!type.Equals("fixed hard disk media", StringComparison.InvariantCultureIgnoreCase)) continue;
-
-            //                DiskDrives.Add(new DiskDrive()
-            //                {
-            //                    Caption = MO.Properties["Caption"].Value.ToString(),
-            //                    Size = Convert.ToInt64(MO.Properties["Size"].Value),
-            //                    SerialNumber = MO.Properties["SerialNumber"].Value.ToString(),
-            //                    Index = Convert.ToInt32(MO.Properties["Index"].Value)
-            //                });
-            //            }
-
-            //            // sortieren
-            //            DiskDrives = DiskDrives.OrderBy(x => x.Index).ToList();
-            //        }
-            //    }
-            //    catch { }
-
-            //    return new List<SupportInfoElement> {
-            //        new SupportInfoElement() {
-            //            Name = "Laufwerk (phys.)",
-            //            Value = string.Join("\n", DiskDrives.Select(x => x.ToString())),
-            //            Number = number,
-            //            Column = col
-            //        }
-            //    };
-            //}
-
-            //if (sit == SupportInfotype.LogicalDrives)
-            //{
-            //    // logical drives
-
-            //    List<LogicalVolume> L = new List<LogicalVolume>();
-
-            //    string drive_string = string.Empty;
-
-            //    try
-            //    {
-            //        foreach (var d in DriveInfo.GetDrives())
-            //        {
-            //            if (!d.DriveType.Equals(DriveType.Fixed)) continue;
-
-            //            L.Add(new LogicalVolume()
-            //            {
-            //                Name = d.Name,
-            //                TotalSpace = d.TotalSize,
-            //                FreeSpace = d.AvailableFreeSpace
-            //            });
-
-            //        }
-            //    }
-            //    catch { }
-
-            //    return new List<SupportInfoElement> {
-            //        new SupportInfoElement() {
-            //            Name = "Laufwerk (log.)",
-            //            Value = string.Join("\n", L.Select(x => x.ToString())),
-            //            Number = number,
-            //            Column = col
-            //        }
-            //    };
-            //}
-
-            //if (sit == SupportInfotype.Network)
-            //{
-            //    // netzwerk info
-
-            //    int N = 1;
-
-            //    List<SupportInfoElement> C = new List<SupportInfoElement>();
-
-            //    List<NetworkInfo> NetworkAdapter = new List<NetworkInfo>();
-            //    //string net_info = string.Empty;
-
-            //    string ip = string.Empty;
-
-            //    try
-            //    {
-
-
-            //        foreach (var n in NetworkInterface.GetAllNetworkInterfaces())
-            //        {
-            //            if (n.NetworkInterfaceType.Equals(NetworkInterfaceType.Loopback)) continue;
-
-            //            IPInterfaceProperties ipip = n.GetIPProperties();
-
-            //            if ((ipip.GatewayAddresses == null) || (ipip.GatewayAddresses.Count.Equals(0)))
-            //            {
-            //                NetworkAdapter.Add(new NetworkInfo() { AdapterName = n.Description, Speed = n.Speed });
-            //                continue;
-            //            };
-
-            //            foreach (var u in ipip.UnicastAddresses)
-            //            {
-            //                if (!u.Address.AddressFamily.Equals(System.Net.Sockets.AddressFamily.InterNetwork)) continue;
-
-            //                ip = u.Address.ToString();
-
-            //                NetworkAdapter.Add(new NetworkInfo() { AdapterName = "■ " + n.Description, Speed = n.Speed });
-            //            }
-
-
-            //        }
-
-
-            //    }
-            //    catch { }
-
-
-            //    C.Add(
-            //        new SupportInfoElement() {
-            //            Name = "Netzwerk",
-            //            Value = string.Join("\n", NetworkAdapter.Select(x => x.ToString())),
-            //            Number = number,
-            //            SubNumber = N++,
-            //            Column = col
-            //        }
-            //    );
-
-            //    if (!string.IsNullOrEmpty(ip))
-            //    C.Add(
-            //        new SupportInfoElement()
-            //        {
-            //            Name = "IP-Adresse",
-            //            Value = ip,
-            //            Number = number,
-            //            SubNumber = N++,
-            //            Column = col
-            //        }
-            //    );
-
-            //    return C;
-
-
-            //}
-
-            //if (sit == SupportInfotype.Ping)
-            //{
-            //    // Ping
-
-            //    if (!IsConnectedToInternet)
-            //    {
-            //        MenuInternetSpeed.IsEnabled = false;
-
-            //        return new List<SupportInfoElement> {
-            //            new SupportInfoElement() {
-            //                Name = "Ping (8.8.8.8)",
-            //                Value = "Keine Internetverbindung",
-            //                Number = number,
-            //                Column = col,
-            //                MakeBold = true
-            //            }
-            //        };
-            //    }
-
-            //    string ping_info = string.Empty;
-
-            //    Ping ping = new Ping();
-
-            //    try
-            //    {
-            //        PingReply pr = ping.Send(new System.Net.IPAddress(new byte[] { 8, 8, 8, 8 }), 1000);
-
-            //        var ping_result = pr.Status.ToString();
-            //        var ping_ms = pr.RoundtripTime.ToString();
-
-            //        ping_info = $"Ergebnis: {ping_result}, {ping_ms} ms";
-
-            //    }
-            //    catch { }
-
-            //    return new List<SupportInfoElement> {
-            //        new SupportInfoElement() {
-            //            Name = "Ping (8.8.8.8)",
-            //            Value = ping_info,
-            //            Number = number,
-            //            Column = col
-            //        }
-            //    };
-            //}
+            if (sit == SupportInfotype.ComputerManufacturer)
+            {
+                string manufacturer = string.Empty;
+
+                try
+                {
+                    ManagementClass cs = new ManagementClass("win32_baseboard");
+                    ManagementObjectCollection moc = cs.GetInstances();
+                    if (moc.Count != 0)
+                    {
+                        foreach (ManagementObject MO in cs.GetInstances())
+                        {
+                            manufacturer = MO.Properties["Manufacturer"].Value.ToString();
+                        }
+                    }
+
+                }
+                catch { }
+
+                return new List<NameAndValue> {
+                        new NameAndValue()
+                        {
+                            Name = "Hersteller",
+                            Value = manufacturer,
+                            Order = number
+                        }
+                    };
+
+                //return new List<SupportInfoElement> {
+                //    new SupportInfoElement() {
+                //        Name = "Hersteller",
+                //        Value = manufacturer,
+                //        Number = number,
+                //        Column = col
+                //    }
+                //};
+
+            }
+
+            if (sit == SupportInfotype.ComputerModel)
+            {
+                string model = string.Empty;
+                string model2 = string.Empty;
+
+                try
+                {
+
+
+                    ManagementClass cs = new ManagementClass("win32_baseboard");
+                    ManagementObjectCollection moc = cs.GetInstances();
+                    if (moc.Count != 0)
+                    {
+                        foreach (ManagementObject MO in cs.GetInstances())
+                        {
+                            model = MO.Properties["Product"].Value.ToString();
+                        }
+                    }
+
+                    ManagementClass cs2 = new ManagementClass("win32_computersystem");
+                    ManagementObjectCollection moc2 = cs.GetInstances();
+                    if (moc2.Count != 0)
+                    {
+                        foreach (ManagementObject MO in cs2.GetInstances())
+                        {
+                            model2 = MO.Properties["Model"].Value.ToString();
+                        }
+                    }
+
+                }
+                catch { }
+
+                return new List<NameAndValue> {
+                        new NameAndValue()
+                        {
+                            Name = "Modell",
+                            Value = string.Format("{0} | {1}", model, model2),
+                            Order = number
+                        }
+                    };
+
+                //return new List<SupportInfoElement> {
+                //    new SupportInfoElement() {
+                //        Name = "Modell",
+                //        Value = string.Format("{0} | {1}", model, model2),
+                //        Number = number,
+                //        Column = col
+                //    }
+                //};
+
+            }
+
+            if (sit == SupportInfotype.SerialBaseboard)
+            {
+                string serial = string.Empty;
+
+                try
+                {
+                    ManagementClass cs = new ManagementClass("win32_baseboard");
+                    ManagementObjectCollection moc = cs.GetInstances();
+                    if (moc.Count != 0)
+                    {
+                        foreach (ManagementObject MO in cs.GetInstances())
+                        {
+                            serial = MO.Properties["SerialNumber"].Value.ToString();
+                        }
+                    }
+                }
+                catch { }
+
+                return new List<NameAndValue> {
+                        new NameAndValue()
+                        {
+                            Name = "Serien-Nummer (Baseboard)",
+                            Value = serial,
+                            Order = number
+                        }
+                    };
+
+                //return new List<SupportInfoElement> {
+                //    new SupportInfoElement() {
+                //        Name = "Serien-Nummer (Baseboard)",
+                //        Value = $"{serial}",
+                //        Number = number,
+                //        Column = col
+                //    }
+                //};
+            }
+
+            if (sit == SupportInfotype.SerialBios)
+            {
+                string serial = string.Empty;
+
+                try
+                {
+                    ManagementClass cs = new ManagementClass("win32_bios");
+                    ManagementObjectCollection moc = cs.GetInstances();
+                    if (moc.Count != 0)
+                    {
+                        foreach (ManagementObject MO in cs.GetInstances())
+                        {
+                            serial = MO.Properties["SerialNumber"].Value.ToString();
+                        }
+                    }
+                }
+                catch { }
+
+                return new List<NameAndValue> {
+                        new NameAndValue()
+                        {
+                            Name = "Serien-Nummer (BIOS)",
+                            Value = serial,
+                            Order = number
+                        }
+                    };
+
+                //return new List<SupportInfoElement> {
+                //    new SupportInfoElement() {
+                //        Name = "Serien-Nummer (BIOS)",
+                //        Value = $"{serial}",
+                //        Number = number,
+                //        Column = col
+                //    }
+                //};
+            }
+
+            if (sit == SupportInfotype.CPU)
+            {
+                string cpu = string.Empty;
+                try
+                {
+
+
+                    ManagementClass cs = new ManagementClass("win32_processor");
+                    ManagementObjectCollection moc = cs.GetInstances();
+                    if (moc.Count != 0)
+                    {
+                        foreach (ManagementObject MO in cs.GetInstances())
+                        {
+                            cpu = MO.Properties["Name"].Value.ToString();
+                        }
+                    }
+                }
+                catch { }
+
+                return new List<NameAndValue> {
+                        new NameAndValue()
+                        {
+                            Name = "CPU",
+                            Value = cpu,
+                            Order = number
+                        }
+                    };
+
+                //return new List<SupportInfoElement> {
+                //    new SupportInfoElement() {
+                //        Name = "CPU",
+                //        Value = cpu,
+                //        Number = number,
+                //        Column = col
+                //    }
+                //};
+            }
+
+            if (sit == SupportInfotype.Firmware)
+            {
+                // Firmware
+
+                string bios_manufacturer = string.Empty;
+                string bios_version = string.Empty;
+                DateTime bios_datetime = DateTime.MinValue;
+
+                try
+                {
+
+
+                    ManagementClass cs = new ManagementClass("win32_bios");
+                    ManagementObjectCollection moc = cs.GetInstances();
+                    if (moc.Count != 0)
+                    {
+                        foreach (ManagementObject MO in cs.GetInstances())
+                        {
+                            bios_manufacturer = MO.Properties["Manufacturer"].Value.ToString();
+                            bios_version = MO.Properties["SMBIOSBIOSVersion"].Value.ToString();
+                            bios_datetime = ManagementDateTimeConverter.ToDateTime(MO.Properties["ReleaseDate"].Value.ToString());
+                        }
+                    }
+                }
+                catch { }
+
+                List<NameAndValue> F = new List<NameAndValue>();
+
+                F.Add(new NameAndValue()
+                        {
+                            Name = "Firmware-Hersteller",
+                            Value = bios_manufacturer,
+                            Order = number++
+                        });
+
+                F.Add(new NameAndValue()
+                {
+                    Name = "-Version",
+                    Value = bios_version,
+                    Order = number++
+                });
+
+                F.Add(new NameAndValue()
+                {
+                    Name = "-Datum",
+                    Value = bios_datetime.ToString("dd.MM.yyyy"),
+                    Order = number++
+                });
+
+                //F.Add(new SupportInfoElement()
+                //{
+                //    Name = "-Version",
+                //    Value = bios_version,
+                //    Number = number,
+                //    SubNumber = N++,
+                //    Column = col
+                //});
+
+                //F.Add(new SupportInfoElement()
+                //{
+                //    Name = "-Datum",
+                //    Value = bios_datetime.ToString("dd.MM.yyyy"),
+                //    Number = number,
+                //    SubNumber = N++,
+                //    Column = col
+                //});
+
+                return F;
+
+            }
+
+            if (sit == SupportInfotype.Memory)
+            {
+                // RAM
+
+                string ram = string.Empty;
+
+                try
+                {
+
+
+                    ManagementClass cs = new ManagementClass("Win32_OperatingSystem");
+                    ManagementObjectCollection moc = cs.GetInstances();
+                    if (moc.Count != 0)
+                    {
+                        foreach (ManagementObject MO in cs.GetInstances())
+                        {
+                            ram = Convert.ToInt64(MO.Properties["TotalVisibleMemorySize"].Value).Kilobytes().Humanize("#.#");
+                        }
+                    }
+                }
+                catch { }
+
+                return new List<NameAndValue> {
+                        new NameAndValue()
+                        {
+                            Name = "RAM",
+                            Value = ram,
+                            Order = number
+                        }
+                    };
+            }
+
+            if (sit == SupportInfotype.PhysicalDrives)
+            {
+                // physical disk drives
+
+                List<DiskDrive> DiskDrives = new List<DiskDrive>();
+
+                string disk_info = string.Empty;
+
+                try
+                {
+                    string caption = string.Empty;
+                    string size_text = string.Empty;
+
+                    ManagementClass cs = new ManagementClass("win32_diskdrive");
+                    ManagementObjectCollection moc = cs.GetInstances();
+                    if (moc.Count != 0)
+                    {
+                        foreach (ManagementObject MO in cs.GetInstances())
+                        {
+                            var type = MO.Properties["MediaType"]?.Value?.ToString();
+
+                            if (type == null) continue;
+                            if (!type.Equals("fixed hard disk media", StringComparison.InvariantCultureIgnoreCase)) continue;
+
+                            DiskDrives.Add(new DiskDrive()
+                            {
+                                Caption = MO.Properties["Caption"].Value.ToString(),
+                                Size = Convert.ToInt64(MO.Properties["Size"].Value),
+                                SerialNumber = MO.Properties["SerialNumber"].Value.ToString(),
+                                Firmware = MO.Properties["FirmwareRevision"].Value.ToString(),
+                                Index = Convert.ToInt32(MO.Properties["Index"].Value)
+                            });
+                        }
+
+                        // sortieren
+                        DiskDrives = DiskDrives.OrderBy(x => x.Index).ToList();
+                    }
+                }
+                catch { }
+
+                return new List<NameAndValue> {
+                        new NameAndValue()
+                        {
+                            Name = "-",
+                            Value = string.Join("\n", DiskDrives.Select(x => x.ToString())),
+                            Order = number
+                        }
+                    };
+
+                //return new List<SupportInfoElement> {
+                //    new SupportInfoElement() {
+                //        Name = "Laufwerk (phys.)",
+                //        Value = string.Join("\n", DiskDrives.Select(x => x.ToString())),
+                //        Number = number,
+                //        Column = col
+                //    }
+                //};
+            }
+
+            if (sit == SupportInfotype.LogicalDrives)
+            {
+                // logical drives
+
+                List<LogicalVolume> L = new List<LogicalVolume>();
+
+                string drive_string = string.Empty;
+
+                try
+                {
+                    foreach (var d in DriveInfo.GetDrives())
+                    {
+                        if (!d.DriveType.Equals(DriveType.Fixed)) continue;
+
+                        L.Add(new LogicalVolume()
+                        {
+                            Name = d.Name,
+                            TotalSpace = d.TotalSize,
+                            FreeSpace = d.AvailableFreeSpace
+                        });
+
+                    }
+                }
+                catch { }
+
+                return new List<NameAndValue> {
+                        new NameAndValue()
+                        {
+                            Name = "-",
+                            Value = string.Join("\n", L.Select(x => x.ToString())),
+                            Order = number
+                        }
+                    };
+
+                //return new List<SupportInfoElement> {
+                //    new SupportInfoElement() {
+                //        Name = "Laufwerk (log.)",
+                //        Value = string.Join("\n", L.Select(x => x.ToString())),
+                //        Number = number,
+                //        Column = col
+                //    }
+                //};
+            }
+
+            if (sit == SupportInfotype.Network)
+            {
+                // netzwerk info
+
+                int N = 1;
+
+                List<NameAndValue> C = new List<NameAndValue>();
+
+                List<NetworkInfo> NetworkAdapter = new List<NetworkInfo>();
+                //string net_info = string.Empty;
+
+                string ip = string.Empty;
+
+                try
+                {
+
+
+                    foreach (var n in NetworkInterface.GetAllNetworkInterfaces())
+                    {
+                        if (n.NetworkInterfaceType.Equals(NetworkInterfaceType.Loopback)) continue;
+
+                        IPInterfaceProperties ipip = n.GetIPProperties();
+
+                        if ((ipip.GatewayAddresses == null) || (ipip.GatewayAddresses.Count.Equals(0)))
+                        {
+                            NetworkAdapter.Add(new NetworkInfo() { AdapterName = n.Description, Speed = n.Speed });
+                            continue;
+                        };
+
+                        foreach (var u in ipip.UnicastAddresses)
+                        {
+                            if (!u.Address.AddressFamily.Equals(System.Net.Sockets.AddressFamily.InterNetwork)) continue;
+
+                            ip = u.Address.ToString();
+
+                            NetworkAdapter.Add(new NetworkInfo() { AdapterName = "■ " + n.Description, Speed = n.Speed });
+                        }
+
+
+                    }
+
+
+                }
+                catch { }
+
+                C.Add(new NameAndValue()
+                {
+                    Name = "Adapter",
+                    Value = string.Join("\n", NetworkAdapter.Select(x => x.ToString())),
+                    Order = number++
+                });
+
+                //C.Add(
+                //    new SupportInfoElement()
+                //    {
+                //        Name = "Netzwerk",
+                //        Value = string.Join("\n", NetworkAdapter.Select(x => x.ToString())),
+                //        Number = number,
+                //        SubNumber = N++,
+                //        Column = col
+                //    }
+                //);
+
+
+
+                if (!string.IsNullOrEmpty(ip))
+                    C.Add(new NameAndValue()
+                    {
+                        Name = "IP-Adresse",
+                        Value = ip,
+                        Order = number++
+                    });
+
+                return C;
+
+
+            }
+
+            if (sit == SupportInfotype.Ping)
+            {
+                // Ping
+
+                if (!IsConnectedToInternet)
+                {
+                    MenuInternetSpeed.IsEnabled = false;
+
+                    return new List<NameAndValue> {
+                        new NameAndValue() {
+                            Name = "Ping (8.8.8.8)",
+                            Value = "Keine Internetverbindung",
+                            Order = number
+                        }
+                    };
+                }
+
+                string ping_info = string.Empty;
+
+                Ping ping = new Ping();
+
+                try
+                {
+                    PingReply pr = ping.Send(new System.Net.IPAddress(new byte[] { 8, 8, 8, 8 }), 1000);
+
+                    var ping_result = pr.Status.ToString();
+                    var ping_ms = pr.RoundtripTime.ToString();
+
+                    ping_info = $"Ergebnis: {ping_result}, {ping_ms} ms";
+
+                }
+                catch { }
+
+                return new List<NameAndValue> {
+                    new NameAndValue() {
+                        Name = "Ping (8.8.8.8)",
+                        Value = ping_info,
+                        Order = number
+                    }
+                };
+            }
 
             //if (sit == SupportInfotype.Webcam)
             //{
