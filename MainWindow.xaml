@@ -49,6 +49,8 @@
 
                 <local:GridWithHeader x:Name="DISK_PHYSICAL" Height="Auto" />
                 <local:GridWithHeader x:Name="DISK_LOGICAL" Height="Auto" />
+                <local:GridWithHeader x:Name="AV_DEVICES" Height="Auto" />
+                <local:GridWithHeader x:Name="WEBCAM" Height="Auto" />
 
 
                 <Label Content="Geräte" Background="#FFC8C8C8" Margin="5,5,5,0" FontWeight="Bold" />

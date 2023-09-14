@@ -43,6 +43,7 @@ using System.Threading;
 using static Vanara.PInvoke.Kernel32.DISK_PARTITION_INFO;
 using NAudio;
 using System.Windows.Media.Media3D;
+using AaronLuna.Common.Network;
 
 namespace Computer_Support_Info
 {
@@ -66,6 +67,8 @@ namespace Computer_Support_Info
         GridWithHeaderData Network = new GridWithHeaderData("Netzwerk");
         GridWithHeaderData DiskP = new GridWithHeaderData("Laufwerke (physísch)");
         GridWithHeaderData DiskL = new GridWithHeaderData("Laufwerke (logisch)");
+        GridWithHeaderData AV = new GridWithHeaderData("Geräte");
+        GridWithHeaderData Webcam = new GridWithHeaderData("Webcam");
 
         public MainWindow()
         {
@@ -77,6 +80,8 @@ namespace Computer_Support_Info
             DISK_PHYSICAL.DataContext = DiskP;
             DISK_LOGICAL.DataContext = DiskL;
             NETWORK.DataContext = Network;
+            AV_DEVICES.DataContext = AV;
+            WEBCAM.DataContext = Webcam;
 
             cts = new CancellationTokenSource();
             po = new ParallelOptions() { CancellationToken = cts.Token, MaxDegreeOfParallelism = System.Environment.ProcessorCount };
@@ -161,7 +166,7 @@ namespace Computer_Support_Info
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.IsAdmin, number = Add10(ref no), col = 1, gwhd = User });
             
             
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.ComputerName, number = no++, col = 1, IsPlainText = true });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.ComputerName, number = no++, col = 1, IsPlainText = true });
             
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.OperatingSystem, number = Add10(ref no), col = 1, gwhd = Os });
             
@@ -178,20 +183,20 @@ namespace Computer_Support_Info
             
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.Network, number = Add10(ref no), col = 1, gwhd = Network });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.Ping, number = Add10(ref no), col = 1, gwhd = Network });
-            
+
             //th.Add(new Taskhelper() { support_info_type = SupportInfotype.Bitlocker, number = no++, col = 1 });
 
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.GraphicsCard, number = no++, col = 2 });
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.Display, number = no++, col = 2 });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.GraphicsCard, number = Add10(ref no), col = 2, gwhd = AV });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.Display, number = Add10(ref no), col = 2, gwhd = AV });
 
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.PhysicalDrives, number = Add10(ref no), col = 2 , gwhd = DiskP });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.LogicalDrives, number = Add10(ref no), col = 2, gwhd = DiskL });
 
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.Webcam, number = no++, col = 2 });
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.AudioOutDevices, number = no++, col = 2 });
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.AudioInDevices, number = no++, col = 2 });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.Webcam, number =Add10(ref no), col = 2, gwhd = Webcam });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.AudioOutDevices, number = Add10(ref no), col = 2, gwhd = AV });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.AudioInDevices, number = Add10(ref no), col = 2, gwhd = AV });
 
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.WebcamDetails, number_prefix = "WC", number = 1, col = 3 });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.WebcamDetails, number_prefix = "WC", number = Add10(ref no), col = 3, gwhd = Webcam });
 
             try
             {
@@ -277,7 +282,8 @@ namespace Computer_Support_Info
                     new NameAndValue()
                     {
                         Name = "Benutzername",
-                        Value = $"{user} {fn}"
+                        Value = $"{user} {fn}",
+                        Order = number
                     }
                 };
 
@@ -328,7 +334,8 @@ namespace Computer_Support_Info
                         new NameAndValue()
                         {
                             Name = "Administrative Rechte",
-                            Value = "JA"
+                            Value = "JA",
+                            Order = number
                         }
                     };
 
@@ -907,6 +914,7 @@ namespace Computer_Support_Info
                 //    }
                 //);
 
+                var myPublicIp = NetworkUtilities.GetPublicIPv4AddressAsync().Result;
 
 
                 if (!string.IsNullOrEmpty(ip))
@@ -964,239 +972,236 @@ namespace Computer_Support_Info
                 };
             }
 
-            //if (sit == SupportInfotype.Webcam)
-            //{
-            //    // Webcam
+            if (sit == SupportInfotype.Webcam)
+            {
+                // Webcam
 
-            //    List<WebcamInfo> W = new List<WebcamInfo>();
+                List<WebcamInfo> W = new List<WebcamInfo>();
 
-            //    FilterInfoCollection videoInputCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+                FilterInfoCollection videoInputCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
 
-            //    if ((videoInputCollection != null) && (videoInputCollection.Count > 0))
-            //    {
-            //        foreach (FilterInfo videoDevice in videoInputCollection)
-            //        {
-            //            List<ResolutionAndFramerate> R = new List<ResolutionAndFramerate>();
-            //            //VideoCaptureDevice vcd = new VideoCaptureDevice(videoDevice.MonikerString);
+                if ((videoInputCollection != null) && (videoInputCollection.Count > 0))
+                {
+                    foreach (FilterInfo videoDevice in videoInputCollection)
+                    {
+                        List<ResolutionAndFramerate> R = new List<ResolutionAndFramerate>();
+                        //VideoCaptureDevice vcd = new VideoCaptureDevice(videoDevice.MonikerString);
 
-            //            //if (vcd != null)
-            //            //{
-            //            //    foreach(VideoCapabilities vc in vcd.VideoCapabilities)
-            //            //    {
+                        //if (vcd != null)
+                        //{
+                        //    foreach(VideoCapabilities vc in vcd.VideoCapabilities)
+                        //    {
 
-            //            //    }
-            //            //}
+                        //    }
+                        //}
 
-            //            W.Add(new WebcamInfo()
-            //            {
-            //                Name = videoDevice.Name,
-            //                Resolutions = R
-            //            });       
-            //        }
+                        W.Add(new WebcamInfo()
+                        {
+                            Name = videoDevice.Name,
+                            Resolutions = R
+                        });
+                    }
 
-            //    }
+                }
 
-            //    return new List<SupportInfoElement> {
-            //        new SupportInfoElement() {
-            //            Name = "Webcam",
-            //            Value = string.Join("\n", W.Select(x => x.ToString())),
-            //            Number = number,
-            //            Column = col
-            //        }
-            //    };
-            //}
+                return new List<NameAndValue> {
+                    new NameAndValue() {
+                        Name = "Webcam",
+                        Value = string.Join("\n", W.Select(x => x.ToString())),
+                        Order = number
+                    }
+                };
+            }
 
-            //if (sit == SupportInfotype.WebcamDetails)
-            //{
-            //    // Webcam-Details
+            if (sit == SupportInfotype.WebcamDetails)
+            {
+                // Webcam-Details
 
-            //    List<WebcamInfo> W = new List<WebcamInfo>();
+                List<WebcamInfo> W = new List<WebcamInfo>();
 
-            //    FilterInfoCollection videoInputCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+                FilterInfoCollection videoInputCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
 
-            //    if ((videoInputCollection != null) && (videoInputCollection.Count > 0))
-            //    {
-            //        foreach (FilterInfo videoDevice in videoInputCollection)
-            //        {
-            //            List<ResolutionAndFramerate> R = new List<ResolutionAndFramerate>();
-            //            VideoCaptureDevice vcd = new VideoCaptureDevice(videoDevice.MonikerString);
+                if ((videoInputCollection != null) && (videoInputCollection.Count > 0))
+                {
+                    foreach (FilterInfo videoDevice in videoInputCollection)
+                    {
+                        List<ResolutionAndFramerate> R = new List<ResolutionAndFramerate>();
+                        VideoCaptureDevice vcd = new VideoCaptureDevice(videoDevice.MonikerString);
 
-            //            if (vcd != null)
-            //            {
-            //                foreach (VideoCapabilities vc in vcd.VideoCapabilities)
-            //                {
-            //                    R.Add(new ResolutionAndFramerate() {
-            //                        Width = vc.FrameSize.Width,
-            //                        Height = vc.FrameSize.Height,
-            //                        Framerate = vc.AverageFrameRate
-            //                    });
-            //                }
-            //            }
+                        if (vcd != null)
+                        {
+                            foreach (VideoCapabilities vc in vcd.VideoCapabilities)
+                            {
+                                R.Add(new ResolutionAndFramerate()
+                                {
+                                    Width = vc.FrameSize.Width,
+                                    Height = vc.FrameSize.Height,
+                                    Framerate = vc.AverageFrameRate
+                                });
+                            }
+                        }
 
-            //            W.Add(new WebcamInfo()
-            //            {
-            //                Name = videoDevice.Name,
-            //                Resolutions = R
-            //            });
-            //        }
+                        W.Add(new WebcamInfo()
+                        {
+                            Name = videoDevice.Name,
+                            Resolutions = R
+                        });
+                    }
 
-            //    }
+                }
 
-            //    List<SupportInfoElement> L = new List<SupportInfoElement>();
+                List<NameAndValue> L = new List<NameAndValue>();
 
-            //    foreach(WebcamInfo wci in W)
-            //    {
-            //        L.Add(new SupportInfoElement()
-            //        {
-            //            Name = wci.Name,
-            //            Value = wci.ResultionText,
-            //            Column = 3,
-            //            MakeBold = false,
-            //            Number = number++
-            //        });
-            //    }
+                foreach (WebcamInfo wci in W)
+                {
+                    L.Add(new NameAndValue()
+                    {
+                        Name = wci.Name,
+                        Value = wci.ResultionText,
+                        MakeBold = false,
+                        Order = number++
+                    });
+                }
 
-            //    return L;
-            //}
+                return L;
+            }
 
-            //if (sit == SupportInfotype.AudioOutDevices)
-            //{
-            //    // Audio (out)
+            if (sit == SupportInfotype.AudioOutDevices)
+            {
+                // Audio (out)
 
-            //    List<string> audio_out = new List<string>();
+                List<string> audio_out = new List<string>();
 
-            //    try
-            //    {
-            //        for (int i = -1; i < WaveOut.DeviceCount; i++)
-            //        {
-            //            var c = WaveOut.GetCapabilities(i);
-            //            audio_out.Add(c.ProductName);
-            //        }
-            //    }
-            //    catch { }
+                try
+                {
+                    for (int i = -1; i < WaveOut.DeviceCount; i++)
+                    {
+                        var c = WaveOut.GetCapabilities(i);
+                        audio_out.Add(c.ProductName);
+                    }
+                }
+                catch { }
 
-            //    if (audio_out.Count > 0)
-            //        return new List<SupportInfoElement> {
-            //            new SupportInfoElement() {
-            //                Name = "Audio (Out)",
-            //                Value = audio_out.Aggregate((x,y) => x + "\n" + y).ToString(),
-            //                Number = number,
-            //                Column = col
-            //            }
-            //        };
-            //}
+                if (audio_out.Count > 0)
+                    return new List<NameAndValue> {
+                        new NameAndValue() {
+                            Name = "Audio (Out)",
+                            Value = audio_out.Aggregate((x,y) => x + "\n" + y).ToString(),
+                            Order = number
+                        }
+                    };
+            }
 
-            //if (sit == SupportInfotype.AudioInDevices)
-            //{
-            //    // Audio (in)
+            if (sit == SupportInfotype.AudioInDevices)
+            {
+                // Audio (in)
 
-            //    List<string> audio_in = new List<string>();
+                List<string> audio_in = new List<string>();
 
-            //    try
-            //    {
-            //        for (int i = -1; i < WaveIn.DeviceCount; i++)
-            //        {
-            //            var c = WaveIn.GetCapabilities(i);
-            //            audio_in.Add(c.ProductName);
-            //        }
+                try
+                {
+                    for (int i = -1; i < WaveIn.DeviceCount; i++)
+                    {
+                        var c = WaveIn.GetCapabilities(i);
+                        audio_in.Add(c.ProductName);
+                    }
 
-            //    }
-            //    catch { }
+                }
+                catch { }
 
-            //    if (audio_in.Count > 0)
-            //    return new List<SupportInfoElement> {
-            //        new SupportInfoElement() {
-            //            Name = "Audio (In)",
-            //            Value = audio_in.Aggregate((x,y) => x + "\n" + y).ToString(),
-            //            Number = number,
-            //            Column = col
-            //        }
-            //    };
-            //}
+                if (audio_in.Count > 0)
+                    return new List<NameAndValue> {
+                    new NameAndValue() {
+                        Name = "Audio (In)",
+                        Value = audio_in.Aggregate((x,y) => x + "\n" + y).ToString(),
+                        Order = number
+                    }
+                };
+            }
 
-            //if (sit == SupportInfotype.GraphicsCard)
-            //{
-            //    // Grafik
+            if (sit == SupportInfotype.GraphicsCard)
+            {
+                // Grafik
 
-            //    List<GraphicsAdapter> G = new List<GraphicsAdapter>();
+                List<GraphicsAdapter> G = new List<GraphicsAdapter>();
 
-            //    try
-            //    {
-            //        DisplayAdapter[] all_da = DisplayAdapter.GetDisplayAdapters().ToArray();
-            //        foreach (DisplayAdapter one_da in all_da)
-            //        {
-            //            var x = one_da.ToPathDisplayAdapter();
-            //            G.Add(new GraphicsAdapter() { Name = one_da.DeviceName });
-            //        }
-            //    } catch { }
+                try
+                {
+                    DisplayAdapter[] all_da = DisplayAdapter.GetDisplayAdapters().ToArray();
+                    foreach (DisplayAdapter one_da in all_da)
+                    {
+                        var x = one_da.ToPathDisplayAdapter();
+                        G.Add(new GraphicsAdapter() { Name = one_da.DeviceName });
+                    }
+                }
+                catch { }
 
 
-            //    //DisplayAdapter[] da = ;
+                //DisplayAdapter[] da = ;
 
 
-            //    //try
-            //    //{
-            //    //    ManagementClass cs = new ManagementClass("win32_videocontroller");
-            //    //    ManagementObjectCollection moc = cs.GetInstances();
-            //    //    if (moc.Count != 0)
-            //    //    {
-            //    //        foreach (ManagementObject MO in cs.GetInstances())
-            //    //        {
-            //    //            G.Add(new GraphicsAdapter()
-            //    //            {
-            //    //                Name = MO.Properties["Name"].Value.ToString(),
-            //    //                DriverVersion = MO.Properties["DriverVersion"].Value.ToString()
-            //    //            });
-            //    //        }
-            //    //    }
-            //    //}
-            //    //catch { }
+                //try
+                //{
+                //    ManagementClass cs = new ManagementClass("win32_videocontroller");
+                //    ManagementObjectCollection moc = cs.GetInstances();
+                //    if (moc.Count != 0)
+                //    {
+                //        foreach (ManagementObject MO in cs.GetInstances())
+                //        {
+                //            G.Add(new GraphicsAdapter()
+                //            {
+                //                Name = MO.Properties["Name"].Value.ToString(),
+                //                DriverVersion = MO.Properties["DriverVersion"].Value.ToString()
+                //            });
+                //        }
+                //    }
+                //}
+                //catch { }
 
-            //    return new List<SupportInfoElement> {
-            //        new SupportInfoElement() {
-            //            Name = "Grafikkarte",
-            //            Value = string.Join("\n", G.Select(x => x.ToString())),
-            //            Number = number,
-            //            Column = col
-            //        }
-            //    };
-            //}
+                return new List<NameAndValue> {
+                    new NameAndValue() {
+                        Name = "Grafikkarte",
+                        Value = string.Join("\n", G.Select(x => x.ToString())),
+                        Order = number
+                    }
+                };
+            }
 
-            //if (sit == SupportInfotype.Display)
-            //{
-            //    //foreach(System.Windows.Forms.Screen s in System.Windows.Forms.Screen.AllScreens)
-            //    //{
-            //    //    Debug.WriteLine(s.ToString());
-            //    //}
+            if (sit == SupportInfotype.Display)
+            {
+                //foreach(System.Windows.Forms.Screen s in System.Windows.Forms.Screen.AllScreens)
+                //{
+                //    Debug.WriteLine(s.ToString());
+                //}
 
 
 
-            //    List<DisplayInfo> D = new List<DisplayInfo>();
+                List<DisplayInfo> D = new List<DisplayInfo>();
 
-            //    List<DisplayDevice> DisplayDevices = new List<DisplayDevice>();
+                List<DisplayDevice> DisplayDevices = new List<DisplayDevice>();
 
-            //    // new
-            //    Display[] all_displays = Display.GetDisplays().ToArray();
+                // new
+                Display[] all_displays = Display.GetDisplays().ToArray();
 
-            //    try
-            //    {
-            //        foreach( Display d in all_displays)
-            //        {
-            //            var d1 = d.ToPathDisplaySource();
-            //            var d2 = d.ToPathDisplayTarget();
+                try
+                {
+                    foreach (Display d in all_displays)
+                    {
+                        var d1 = d.ToPathDisplaySource();
+                        var d2 = d.ToPathDisplayTarget();
 
-            //            D.Add(new DisplayInfo()
-            //            {
-            //                Name = d2.FriendlyName,
-            //                ResX = d.CurrentSetting.Resolution.Width,
-            //                ResY = d.CurrentSetting.Resolution.Height,
-            //                Frequency = d.CurrentSetting.Frequency,
-            //                Dpi = d1.CurrentDPIScale.ToString() 
-            //            });
+                        D.Add(new DisplayInfo()
+                        {
+                            Name = d2.FriendlyName,
+                            ResX = d.CurrentSetting.Resolution.Width,
+                            ResY = d.CurrentSetting.Resolution.Height,
+                            Frequency = d.CurrentSetting.Frequency,
+                            Dpi = d1.CurrentDPIScale.ToString()
+                        });
 
-            //        }
-            //    }
-            //    catch { }
+                    }
+                }
+                catch { }
 
 
 
@@ -1204,78 +1209,77 @@ namespace Computer_Support_Info
 
 
 
-            //    //// display devices structure
-            //    //DISPLAY_DEVICE dd = new DISPLAY_DEVICE();
-            //    //dd.cb = (uint)Marshal.SizeOf(dd);
+                // display devices structure
+               // DISPLAY_DEVICE dd = new DISPLAY_DEVICE();
+               // dd.cb = (uint)Marshal.SizeOf(dd);
 
-            //    //for(uint id=0; Vanara.PInvoke.User32.EnumDisplayDevices(null, id, ref dd, 0 ); id++)
-            //    //{
-            //    //    if (dd.StateFlags.HasFlag(DISPLAY_DEVICE_FLAGS.DISPLAY_DEVICE_ACTIVE))
-            //    //    {
-            //    //        string did = dd.DeviceID;
-            //    //        string name = dd.DeviceName;
-            //    //        string displaystring = dd.DeviceString;
+               // for (uint id = 0; Vanara.PInvoke.User32.EnumDisplayDevices(null, id, ref dd, 0); id++)
+               // {
+               //     if (dd.StateFlags.HasFlag(DISPLAY_DEVICE_FLAGS.DISPLAY_DEVICE_ACTIVE))
+               //     {
+               //         string did = dd.DeviceID;
+               //         string name = dd.DeviceName;
+               //         string displaystring = dd.DeviceString;
 
-            //    //        Vanara.PInvoke.User32.EnumDisplayDevices(dd.DeviceName, 0, ref dd, 0);
+               //         Vanara.PInvoke.User32.EnumDisplayDevices(dd.DeviceName, 0, ref dd, 0);
 
-            //    //        string monitor = dd.DeviceString;
+               //         string monitor = dd.DeviceString;
 
-            //    //        DisplayDevices.Add(new DisplayDevice()
-            //    //        {
-            //    //            ID = did,
-            //    //            Name = name,
-            //    //            DisplayString = displaystring,
-            //    //            Monitor = monitor
-            //    //        });
-            //    //    }
-            //    //}
+               //         DisplayDevices.Add(new DisplayDevice()
+               //         {
+               //             ID = did,
+               //             Name = name,
+               //             DisplayString = displaystring,
+               //             Monitor = monitor
+               //         });
+               //     }
+               // }
 
-            //    // device mode structure
-            //    //DEVMODE dm = new DEVMODE();
+               // device mode structure
+               //DEVMODE dm = new DEVMODE();
 
-            //    //foreach (DisplayDevice DispDev in DisplayDevices)
-            //    //{
+               // foreach (DisplayDevice DispDev in DisplayDevices)
+               // {
 
-            //    //    bool ret = Vanara.PInvoke.User32.EnumDisplaySettings(DispDev.Name, Vanara.PInvoke.User32.ENUM_CURRENT_SETTINGS, ref dm);
+               //     bool ret = Vanara.PInvoke.User32.EnumDisplaySettings(DispDev.Name, Vanara.PInvoke.User32.ENUM_CURRENT_SETTINGS, ref dm);
 
-            //    //    if (ret)
-            //    //    {
-            //    //        DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.BitsPerPel = (int)dm.dmBitsPerPel;
-            //    //        DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.DisplayFrequency = (int)dm.dmDisplayFrequency;
-            //    //        DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.PelsWidth = (int)dm.dmPelsWidth;
-            //    //        DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.PelsHeight = (int)dm.dmPelsHeight;
-            //    //    }
-            //    //}
+               //     if (ret)
+               //     {
+               //         DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.BitsPerPel = (int)dm.dmBitsPerPel;
+               //         DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.DisplayFrequency = (int)dm.dmDisplayFrequency;
+               //         DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.PelsWidth = (int)dm.dmPelsWidth;
+               //         DisplayDevices.First(x => x.ID.Equals(DispDev.ID)).Info.PelsHeight = (int)dm.dmPelsHeight;
+               //     }
+               // }
 
-            //    //string display_info = string.Join("\n", DisplayDevices.Select(x => x.ToString()));
+               // string display_info = string.Join("\n", DisplayDevices.Select(x => x.ToString()));
 
-            //    //try
-            //    //{
-            //    //    ManagementClass cs = new ManagementClass("win32_desktopmonitor");
-            //    //    ManagementObjectCollection moc = cs.GetInstances();
-            //    //    if (moc.Count != 0)
-            //    //    {
-            //    //        foreach (ManagementObject MO in cs.GetInstances())
-            //    //        {
-            //    //            D.Add(new DisplayInfo()
-            //    //            {
-            //    //                Manufacturer = MO.Properties["MonitorManufacturer"].Value != null ? MO.Properties["MonitorManufacturer"].Value.ToString() : string.Empty,
-            //    //                Name = MO.Properties["MonitorType"].Value != null ? MO.Properties["MonitorType"].Value.ToString() : string.Empty
-            //    //            });
-            //    //        }
-            //    //    }
-            //    //}
-            //    //catch { }
+               // try
+               // {
+               //     ManagementClass cs = new ManagementClass("win32_desktopmonitor");
+               //     ManagementObjectCollection moc = cs.GetInstances();
+               //     if (moc.Count != 0)
+               //     {
+               //         foreach (ManagementObject MO in cs.GetInstances())
+               //         {
+               //             D.Add(new DisplayInfo()
+               //             {
+               //                 Manufacturer = MO.Properties["MonitorManufacturer"].Value != null ? MO.Properties["MonitorManufacturer"].Value.ToString() : string.Empty,
+               //                 Name = MO.Properties["MonitorType"].Value != null ? MO.Properties["MonitorType"].Value.ToString() : string.Empty
+               //             });
+               //         }
+               //     }
+               // }
+               // catch { }
 
-            //    return new List<SupportInfoElement> {
-            //        new SupportInfoElement() {
-            //            Name = "Monitor",
-            //            Value = string.Join("\n", D.Select(x => x.ToString())),
-            //            Number = number,
-            //            Column = col
-            //        }
-            //    };
-            //}
+                return new List<NameAndValue> {
+                    new NameAndValue() {
+                        Name = "Monitor",
+                        Value = string.Join("\n", D.Select(x => x.ToString())),
+                        Order = number
+                    }
+                };
+            }
 
             //if (sit == SupportInfotype.Bitlocker)
             //{

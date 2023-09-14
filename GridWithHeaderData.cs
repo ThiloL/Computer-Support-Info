@@ -42,5 +42,7 @@ namespace Computer_Support_Info
         public string Name { get; set; }
         public string Value { get; set; }
         public int Order { get; set; }
+
+        public bool MakeBold { get; set; }
     }
 }
