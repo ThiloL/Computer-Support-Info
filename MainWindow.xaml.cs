@@ -31,6 +31,8 @@ using Vanara.PInvoke;
 
 using AForge.Video.DirectShow;
 using NAudio.Wave;
+using NAudio.CoreAudioApi;
+
 using System.ComponentModel;
 using System.Reflection;
 using static Vanara.PInvoke.Gdi32;
@@ -43,7 +45,9 @@ using System.Threading;
 using static Vanara.PInvoke.Kernel32.DISK_PARTITION_INFO;
 using NAudio;
 using System.Windows.Media.Media3D;
-using AaronLuna.Common.Network;
+using Ipify;
+using System.Net;
+using System.Net.Http;
 
 namespace Computer_Support_Info
 {
@@ -96,6 +100,8 @@ namespace Computer_Support_Info
             // check internet connection
             WinINet.INTERNET_CONNECTION ic;
             IsConnectedToInternet = WinINet.InternetGetConnectedState(out ic, 0);
+
+            vm.InternetConnection = (IsConnectedToInternet == true) ? "\u2705" : "\u274E";
 
             background_worker.WorkerReportsProgress = false;
             background_worker.DoWork += Background_worker_DoWork;
@@ -251,10 +257,10 @@ namespace Computer_Support_Info
                 System.Windows.Threading.DispatcherPriority.Background,
                 new Action(() =>
                 {
-                    vm.AddItem(Item);
-                    vm.ViewSource1.View.Refresh();
-                    vm.ViewSource2.View.Refresh();
-                    vm.ViewSource3.View.Refresh();
+                    //vm.AddItem(Item);
+                    //vm.ViewSource1.View.Refresh();
+                    //vm.ViewSource2.View.Refresh();
+                    //vm.ViewSource3.View.Refresh();
                     RepositionWindows();
                 })
             );
@@ -914,16 +920,37 @@ namespace Computer_Support_Info
                 //    }
                 //);
 
-                var myPublicIp = NetworkUtilities.GetPublicIPv4AddressAsync().Result;
-
-
                 if (!string.IsNullOrEmpty(ip))
                     C.Add(new NameAndValue()
                     {
-                        Name = "IP-Adresse",
+                        Name = "IP-Adresse(privat)",
                         Value = ip,
                         Order = number++
                     });
+
+                IPAddress publicIp = null;
+
+                try
+                {
+                    publicIp = Ipify.Ipify.GetPublicIPAddress();
+                }
+                catch { }
+
+                if (publicIp != null)
+                {
+                    C.Add(new NameAndValue()
+                    {
+                        Name = "IP-Adresse  (öffentlich)",
+                        Value = publicIp.ToString(),
+                        Order = number++
+                    });
+
+                    HttpClient client = new HttpClient();
+                    HttpResponseMessage response = client.GetAsync($"https://api.ipgeolocation.io/ipgeo?apiKey=0b3a13f962a5480c88a81a14bf1cb9eb&ip={publicIp.ToString()}&lang=de").Result;
+                    response.EnsureSuccessStatusCode();
+                    string responseBody = response.Content.ReadAsStringAsync().Result;
+
+                }
 
                 return C;
 
@@ -1068,17 +1095,33 @@ namespace Computer_Support_Info
 
             if (sit == SupportInfotype.AudioOutDevices)
             {
+                MMDeviceEnumerator enumerator = new MMDeviceEnumerator();
+                
+
+
+
                 // Audio (out)
 
-                List<string> audio_out = new List<string>();
+                List<AudioDevice> audio_out = new List<AudioDevice>();
+
+                var out_dev = enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active);
 
                 try
                 {
-                    for (int i = -1; i < WaveOut.DeviceCount; i++)
+                    foreach(MMDevice d in out_dev)
                     {
-                        var c = WaveOut.GetCapabilities(i);
-                        audio_out.Add(c.ProductName);
+                        audio_out.Add(new AudioDevice()
+                        {
+                            Name  = d.FriendlyName,
+                            VolumeLevel = Convert.ToInt32(d.AudioEndpointVolume.MasterVolumeLevelScalar * 100)
+                        });
                     }
+
+                    //for (int i = -1; i < WaveOut.DeviceCount; i++)
+                    //{
+                    //    var c = WaveOut.GetCapabilities(i);
+                    //    audio_out.Add(c.ProductName);
+                    //}
                 }
                 catch { }
 
@@ -1086,7 +1129,7 @@ namespace Computer_Support_Info
                     return new List<NameAndValue> {
                         new NameAndValue() {
                             Name = "Audio (Out)",
-                            Value = audio_out.Aggregate((x,y) => x + "\n" + y).ToString(),
+                            Value = string.Join("\n", audio_out.Select(x => x.ToString())),
                             Order = number
                         }
                     };
@@ -1094,17 +1137,32 @@ namespace Computer_Support_Info
 
             if (sit == SupportInfotype.AudioInDevices)
             {
+
+                MMDeviceEnumerator enumerator = new MMDeviceEnumerator();
+
                 // Audio (in)
 
-                List<string> audio_in = new List<string>();
+                List<AudioDevice> audio_in = new List<AudioDevice>();
+
+                var out_dev = enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active);
+
 
                 try
                 {
-                    for (int i = -1; i < WaveIn.DeviceCount; i++)
+                    foreach (MMDevice d in out_dev)
                     {
-                        var c = WaveIn.GetCapabilities(i);
-                        audio_in.Add(c.ProductName);
+                        audio_in.Add(new AudioDevice()
+                        {
+                            Name = d.FriendlyName,
+                            VolumeLevel = Convert.ToInt32(d.AudioEndpointVolume.MasterVolumeLevelScalar * 100)
+                        });
                     }
+
+                    //for (int i = -1; i < WaveIn.DeviceCount; i++)
+                    //{
+                    //    var c = WaveIn.GetCapabilities(i);
+                    //    audio_in.Add(c.ProductName);
+                    //}
 
                 }
                 catch { }
@@ -1113,7 +1171,7 @@ namespace Computer_Support_Info
                     return new List<NameAndValue> {
                     new NameAndValue() {
                         Name = "Audio (In)",
-                        Value = audio_in.Aggregate((x,y) => x + "\n" + y).ToString(),
+                        Value = string.Join("\n", audio_in.Select(x => x.ToString())),
                         Order = number
                     }
                 };

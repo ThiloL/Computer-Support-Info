@@ -33,6 +33,11 @@
             <Label x:Name="ComputerName" Background="Black" Padding="20,0,0,20" Content="{Binding Path=ComputerName, UpdateSourceTrigger=PropertyChanged}" Foreground="White" FontWeight="Bold" FontSize="24"  />
         </StackPanel>
 
+        <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
+            <Label x:Name="InternetLabel" Background="Black" Padding="20,20,0,0" Content="Internetverbindung" Foreground="White" FontSize="9"  />
+            <Label x:Name="InternetConnection" Background="Black" Padding="20,0,0,20" Content="{Binding Path=InternetConnection, UpdateSourceTrigger=PropertyChanged}" Foreground="White" FontWeight="Bold" FontSize="24"  />
+        </StackPanel>
+
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.Row="2" Grid.Column="0"  Padding="15">
             <StackPanel>
 
@@ -51,56 +56,6 @@
                 <local:GridWithHeader x:Name="DISK_LOGICAL" Height="Auto" />
                 <local:GridWithHeader x:Name="AV_DEVICES" Height="Auto" />
                 <local:GridWithHeader x:Name="WEBCAM" Height="Auto" />
-
-
-                <Label Content="Geräte" Background="#FFC8C8C8" Margin="5,5,5,0" FontWeight="Bold" />
-                <DataGrid x:Name="SupportInfosGrid2" Height="Auto" ItemsSource="{Binding Path=ViewSource2.View}" IsSynchronizedWithCurrentItem="True" 
-                          AutoGenerateColumns="False" CanUserSortColumns="False" Margin="5,5,5,5" DockPanel.Dock="Top" 
-                          GridLinesVisibility="Horizontal" RowHeaderWidth="0">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Nr." Binding="{Binding Number}" Width="Auto"/>
-                        <DataGridTextColumn Header="Beschreibung" Binding="{Binding Name}" Width="Auto"/>
-                        <DataGridTextColumn Header="Wert" Binding="{Binding Value}" Width="Auto"/>
-                    </DataGrid.Columns>
-
-                    <DataGrid.HorizontalGridLinesBrush>
-                        <SolidColorBrush Color="#25000000"/>
-                    </DataGrid.HorizontalGridLinesBrush>
-
-                    <DataGrid.Resources>
-                        <Style TargetType="{x:Type DataGridRow}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding MakeBold}" Value="True">
-                                    <Setter Property="FontWeight" Value="Bold" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGrid.Resources>
-                </DataGrid>
-                <Label Content="Webcam-Details" Background="#FFC8C8C8" Margin="5,5,5,0" FontWeight="Bold" />
-                <DataGrid x:Name="SupportInfosGrid3" Height="Auto" ItemsSource="{Binding Path=ViewSource3.View}" IsSynchronizedWithCurrentItem="True" 
-          AutoGenerateColumns="False" CanUserSortColumns="False"
-           Margin="5,5,5,5" DockPanel.Dock="Top" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Nr." Binding="{Binding Number}" Width="Auto" />
-                        <DataGridTextColumn Header="Beschreibung" Binding="{Binding Name}" Width="Auto" />
-                        <DataGridTextColumn Header="Wert" Binding="{Binding Value}" Width="Auto" />
-                    </DataGrid.Columns>
-
-                    <DataGrid.HorizontalGridLinesBrush>
-                        <SolidColorBrush Color="#25000000"/>
-                    </DataGrid.HorizontalGridLinesBrush>
-
-                    <DataGrid.Resources>
-                        <Style TargetType="{x:Type DataGridRow}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding MakeBold}" Value="True">
-                                    <Setter Property="FontWeight" Value="Bold" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGrid.Resources>
-                </DataGrid>
             </StackPanel>
         </ScrollViewer>
 
