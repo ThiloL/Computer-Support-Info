@@ -35,6 +35,20 @@ namespace Computer_Support_Info
             }
         }
 
+        private string _UserName;
+        public string UserName
+        {
+            get
+            {
+                return _UserName;
+            }
+            set
+            {
+                _UserName = value;
+                RaisePropertyChanged();
+            }
+        }
+
         private string _InternetConnection;
         public string InternetConnection
         {

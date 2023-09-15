@@ -21,21 +21,30 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Menu Height="Auto" VerticalAlignment="Top" Grid.Row="0" Grid.ColumnSpan="2">
+        <Menu Height="Auto" VerticalAlignment="Top" Grid.Row="0" Grid.ColumnSpan="2" Padding="5">
             <MenuItem Header="Aktionen">
                 <MenuItem x:Name="MenuInternetSpeed" Header="Internetgeschwindigkeit messen (Laufzeit: 1-2 Minuten)" Click="MenuItem_Click"/>
                 <MenuItem Header="Windows Update-Verlauf anzeigen" Click="MenuItem_Click_1" />
             </MenuItem>
         </Menu>
 
-        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
-            <Label x:Name="ComputerNameLabel" Background="Black" Padding="20,20,0,0" Content="Computername" Foreground="White" FontSize="9"  />
-            <Label x:Name="ComputerName" Background="Black" Padding="20,0,0,20" Content="{Binding Path=ComputerName, UpdateSourceTrigger=PropertyChanged}" Foreground="White" FontWeight="Bold" FontSize="24"  />
-        </StackPanel>
+        <DockPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Background="Black">
+            <StackPanel Width="Auto" Margin="0,0,50,0">
+                <Label x:Name="ComputerNameLabel"  Padding="20,20,0,0" Content="Computername" Foreground="White" FontSize="10"  />
+                <Label x:Name="ComputerName"  Padding="20,0,0,20" Content="{Binding Path=ComputerName, UpdateSourceTrigger=PropertyChanged}" Foreground="White" FontWeight="Bold" FontSize="24"  />
+            </StackPanel>
+            <StackPanel Width="Auto" Margin="0,0,50,0">
+                <Label x:Name="UserNameLabel"  Padding="20,20,0,0" Content="Username" Foreground="White" FontSize="10"  />
+                <Label x:Name="UserName"  Padding="20,0,0,20" Content="{Binding Path=UserName, UpdateSourceTrigger=PropertyChanged}" Foreground="White" FontWeight="Bold" FontSize="24"  />
+            </StackPanel>
+            <StackPanel Width="Auto" Margin="0,0,50,0">
+                <Label x:Name="InternetLabel"  Padding="20,20,0,0" Content="Internetverbindung" Foreground="White" FontSize="10"  />
+                <Label x:Name="InternetConnection"  Padding="20,0,0,20" Content="{Binding Path=InternetConnection, UpdateSourceTrigger=PropertyChanged}" Foreground="White" FontWeight="Bold" FontSize="24"  />
+            </StackPanel>
+        </DockPanel>
 
-        <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
-            <Label x:Name="InternetLabel" Background="Black" Padding="20,20,0,0" Content="Internetverbindung" Foreground="White" FontSize="9"  />
-            <Label x:Name="InternetConnection" Background="Black" Padding="20,0,0,20" Content="{Binding Path=InternetConnection, UpdateSourceTrigger=PropertyChanged}" Foreground="White" FontWeight="Bold" FontSize="24"  />
+        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+            
         </StackPanel>
 
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.Row="2" Grid.Column="0"  Padding="15">

@@ -1,53 +1,31 @@
-﻿using System;
+﻿using AForge.Video.DirectShow;
+using Computer_Support_Info.Classes;
+using Humanizer;
+using NAudio.CoreAudioApi;
+using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
-using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
 using System.IO;
 using System.Linq;
 using System.Management;
-using System.Net.NetworkInformation;
-using System.Security.Principal;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
-using Microsoft.WindowsAPICodePack.Shell;
-using Microsoft.WindowsAPICodePack.Shell.PropertySystem;
-using Path = System.IO.Path;
-
-using Humanizer;
-using Vanara.PInvoke;
-
-using AForge.Video.DirectShow;
-using NAudio.Wave;
-using NAudio.CoreAudioApi;
-
-using System.ComponentModel;
-using System.Reflection;
-using static Vanara.PInvoke.Gdi32;
-using System.Runtime.InteropServices;
-
-using WindowsDisplayAPI;
-using WindowsDisplayAPI.Native;
-using WindowsDisplayAPI.Native.DisplayConfig;
-using System.Threading;
-using static Vanara.PInvoke.Kernel32.DISK_PARTITION_INFO;
-using NAudio;
-using System.Windows.Media.Media3D;
-using Ipify;
 using System.Net;
 using System.Net.Http;
+using System.Net.NetworkInformation;
+using System.Reflection;
+using System.Security.Principal;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Media;
+using Vanara.PInvoke;
+using static Vanara.PInvoke.NetApi32;
+using WindowsDisplayAPI;
+using Path = System.IO.Path;
 
 namespace Computer_Support_Info
 {
@@ -65,7 +43,7 @@ namespace Computer_Support_Info
         bool IsConnectedToInternet = false;
 
 
-        GridWithHeaderData User = new GridWithHeaderData("Benutzer");
+        GridWithHeaderData User = new GridWithHeaderData("Benutzer/Entra ID");
         GridWithHeaderData Os = new GridWithHeaderData("Betriebssystem");
         GridWithHeaderData Computer = new GridWithHeaderData("Computer");
         GridWithHeaderData Network = new GridWithHeaderData("Netzwerk");
@@ -76,6 +54,8 @@ namespace Computer_Support_Info
 
         public MainWindow()
         {
+
+
             InitializeComponent();
 
             USER.DataContext = User;
@@ -168,10 +148,10 @@ namespace Computer_Support_Info
 
             List<Taskhelper> th = new List<Taskhelper>();
             
-            th.Add(new Taskhelper() { support_info_type = SupportInfotype.UserName, number = Add10(ref no), col = 1, gwhd = User });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.UserName, number = Add10(ref no), col = 1, gwhd = User, IsPlainText = true });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.IsAdmin, number = Add10(ref no), col = 1, gwhd = User });
-            
-            
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.AadInfo, number = Add10(ref no), col = 1, gwhd = User });
+
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.ComputerName, number = no++, col = 1, IsPlainText = true });
             
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.OperatingSystem, number = Add10(ref no), col = 1, gwhd = Os });
@@ -217,6 +197,7 @@ namespace Computer_Support_Info
                     if (one.IsPlainText)
                     {
                         if (one.support_info_type == SupportInfotype.ComputerName) vm.ComputerName = Results[0].Value;
+                        if (one.support_info_type == SupportInfotype.UserName) vm.UserName = Results[0].Value;
                     }
                     else
                         // foreach (SupportInfoElement sie in Results) AddGridItem(sie);
@@ -270,7 +251,48 @@ namespace Computer_Support_Info
         private List<NameAndValue> LoadData(SupportInfotype sit, int number, int col, string number_prefix = "")
         {
 
-            
+            if (sit == SupportInfotype.AadInfo)
+            {
+                DSREG_JOIN_INFO join_info = new DSREG_JOIN_INFO();
+
+                try
+                {
+                    var r = NetGetAadJoinInformation(null, out join_info);
+                    if (r == HRESULT.S_OK)
+                    {
+                        List<NameAndValue> L = new List<NameAndValue>();
+
+                        L.Add(new NameAndValue()
+                        {
+                            Name = "Tenant | -ID",
+                            Value = $"{join_info.pszTenantDisplayName} | {join_info.pszTenantId}",
+                            Order = number++
+                        });
+
+                        L.Add(new NameAndValue()
+                        {
+                            Name = "User E-Mail",
+                            Value = $"{join_info.pszJoinUserEmail}",
+                            Order = number++
+                        });
+
+                        return L;
+                    }
+                } 
+                catch
+                {
+                }
+
+                return null;
+
+                
+
+                
+
+
+            }
+
+
 
             if (sit == SupportInfotype.UserName)
             {
@@ -846,15 +868,6 @@ namespace Computer_Support_Info
                             Order = number
                         }
                     };
-
-                //return new List<SupportInfoElement> {
-                //    new SupportInfoElement() {
-                //        Name = "Laufwerk (log.)",
-                //        Value = string.Join("\n", L.Select(x => x.ToString())),
-                //        Number = number,
-                //        Column = col
-                //    }
-                //};
             }
 
             if (sit == SupportInfotype.Network)
@@ -866,7 +879,6 @@ namespace Computer_Support_Info
                 List<NameAndValue> C = new List<NameAndValue>();
 
                 List<NetworkInfo> NetworkAdapter = new List<NetworkInfo>();
-                //string net_info = string.Empty;
 
                 string ip = string.Empty;
 
@@ -909,17 +921,6 @@ namespace Computer_Support_Info
                     Order = number++
                 });
 
-                //C.Add(
-                //    new SupportInfoElement()
-                //    {
-                //        Name = "Netzwerk",
-                //        Value = string.Join("\n", NetworkAdapter.Select(x => x.ToString())),
-                //        Number = number,
-                //        SubNumber = N++,
-                //        Column = col
-                //    }
-                //);
-
                 if (!string.IsNullOrEmpty(ip))
                     C.Add(new NameAndValue()
                     {
@@ -945,10 +946,29 @@ namespace Computer_Support_Info
                         Order = number++
                     });
 
-                    HttpClient client = new HttpClient();
-                    HttpResponseMessage response = client.GetAsync($"https://api.ipgeolocation.io/ipgeo?apiKey=0b3a13f962a5480c88a81a14bf1cb9eb&ip={publicIp.ToString()}&lang=de").Result;
-                    response.EnsureSuccessStatusCode();
-                    string responseBody = response.Content.ReadAsStringAsync().Result;
+                    try
+                    {
+
+                        HttpClient client = new HttpClient();
+                        HttpResponseMessage response = client.GetAsync($"https://api.ipgeolocation.io/ipgeo?apiKey=0b3a13f962a5480c88a81a14bf1cb9eb&ip={publicIp.ToString()}&lang=de").Result;
+                        response.EnsureSuccessStatusCode();
+                        string responseBody = response.Content.ReadAsStringAsync().Result;
+
+                        IpLocation ip_location = JsonSerializer.Deserialize<IpLocation>(responseBody);
+
+                        if (ip_location != null)
+                        {
+                            C.Add(new NameAndValue()
+                            {
+                                Name = "Standort/Provider",
+                                Value = ip_location.ToString(),
+                                Order = number++
+                            });
+                        }
+
+                    }
+                    catch { }
+
 
                 }
 

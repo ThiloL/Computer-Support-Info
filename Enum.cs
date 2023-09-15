@@ -29,6 +29,7 @@ namespace Computer_Support_Info
         AudioOutDevices,
         GraphicsCard,
         Display,
-        Bitlocker
+        Bitlocker,
+        AadInfo
     }
 }
