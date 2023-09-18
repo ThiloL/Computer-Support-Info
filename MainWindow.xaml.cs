@@ -97,7 +97,7 @@ namespace Computer_Support_Info
             //SupportInfosGrid2.Items.Refresh();
             //SupportInfosGrid3.Items.Refresh();
 
-            MainGrid.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFD8E8E5"));
+            this.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFD8E8E5"));
             Mouse.OverrideCursor = null;
 
             RepositionWindows();
@@ -1445,6 +1445,11 @@ namespace Computer_Support_Info
             WindowsUpdatesWindow.ShowDialog();
         }
 
+        private void MenuInstalledApps(object sender, RoutedEventArgs e)
+        {
+            InstalledApps InstalledAppsWindow = new InstalledApps();
+            InstalledAppsWindow.ShowDialog();
+        }
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             try
