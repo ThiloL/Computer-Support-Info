@@ -13,7 +13,7 @@
         TextElement.FontSize="14"
         FontFamily="{materialDesign:MaterialDesignFont}"
         >
-    <Grid x:Name="MainGrid" Background="#FFBF5A5A" Margin="10" HorizontalAlignment="Stretch">
+    <Grid x:Name="MainGrid" Margin="10" HorizontalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />

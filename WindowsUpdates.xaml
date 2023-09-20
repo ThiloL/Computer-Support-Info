@@ -21,7 +21,9 @@
         </Grid.RowDefinitions>
         
         <DataGrid x:Name="WindowsUpdatesGrid" Height="Auto"  IsSynchronizedWithCurrentItem="True" AutoGenerateColumns="False" Grid.Row="0" IsReadOnly="True"                
-                            DockPanel.Dock="Top" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
+                            DockPanel.Dock="Top" GridLinesVisibility="Horizontal" RowHeaderWidth="0"
+            materialDesign:DataGridAssist.CellPadding="4 4 4 4" 
+            materialDesign:DataGridAssist.ColumnHeaderPadding="4 4 4 4"                  >
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Datum" Binding="{Binding Date}" />
                 <DataGridTextColumn Header="Status" Binding="{Binding Result}" />
@@ -45,6 +47,6 @@
         </DataGrid>
 
         <Button x:Name="BtnExit" Content="Schließen" Margin="25" Click="BtnExit_Click" 
-                Width="692" Grid.Row="1" VerticalAlignment="Bottom" ToolTip="Dialog schließen" />
+                Width="Auto" Grid.Row="1" VerticalAlignment="Bottom" ToolTip="Dialog schließen" />
     </Grid>
 </Window>

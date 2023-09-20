@@ -25,7 +25,7 @@ namespace Computer_Support_Info
 
         public override string ToString()
         {
-            return string.Format("{0} | {1} | Serien-Nr.: {2} | Firmware: {3} | Größe: {4}", Index, Caption.Trim(), SerialNumber.Trim(), Firmware.Trim(), DiskSizeText);
+            return string.Format("{0}\nSerien-Nr.: {1} | Firmware: {2}\nGröße: {3}", Caption.Trim(), SerialNumber.Trim(), Firmware.Trim(), DiskSizeText);
         }
 
     }

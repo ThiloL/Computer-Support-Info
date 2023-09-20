@@ -39,5 +39,24 @@ namespace Computer_Support_Info
                 throw new NotImplementedException();
             }
         }
+
+        private void UserGrid_Loaded(object sender, RoutedEventArgs e)
+        {
+            SetColumnWidths();
+        }
+
+        private void UserGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            SetColumnWidths();
+        }
+
+        private void SetColumnWidths()
+        {
+            //this.UserGrid.Columns[0].Width = new DataGridLength(20, DataGridLengthUnitType.Star);
+            //this.UserGrid.Columns[1].Width = new DataGridLength(80, DataGridLengthUnitType.Star);
+            //this.UserGrid.Columns[2].Width = new DataGridLength(0, DataGridLengthUnitType.Star);
+        }
+
+
     }
 }

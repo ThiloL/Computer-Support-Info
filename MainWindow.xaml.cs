@@ -26,6 +26,7 @@ using Vanara.PInvoke;
 using static Vanara.PInvoke.NetApi32;
 using WindowsDisplayAPI;
 using Path = System.IO.Path;
+using Vanara.Extensions;
 
 namespace Computer_Support_Info
 {
@@ -47,7 +48,7 @@ namespace Computer_Support_Info
         GridWithHeaderData Os = new GridWithHeaderData("Betriebssystem");
         GridWithHeaderData Computer = new GridWithHeaderData("Computer");
         GridWithHeaderData Network = new GridWithHeaderData("Netzwerk");
-        GridWithHeaderData DiskP = new GridWithHeaderData("Laufwerke (physísch)");
+        GridWithHeaderData DiskP = new GridWithHeaderData("Laufwerke (physisch)");
         GridWithHeaderData DiskL = new GridWithHeaderData("Laufwerke (logisch)");
         GridWithHeaderData AV = new GridWithHeaderData("Geräte");
         GridWithHeaderData Webcam = new GridWithHeaderData("Webcam");
@@ -96,6 +97,8 @@ namespace Computer_Support_Info
             //SupportInfosGrid1.Items.Refresh();
             //SupportInfosGrid2.Items.Refresh();
             //SupportInfosGrid3.Items.Refresh();
+
+            this.MainMenu.IsEnabled = true;
 
             this.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFD8E8E5"));
             Mouse.OverrideCursor = null;
@@ -789,6 +792,15 @@ namespace Computer_Support_Info
                     string caption = string.Empty;
                     string size_text = string.Empty;
 
+                    //ManagementScope scope = new ManagementScope("\\\\.\\ROOT\\Microsoft\\Windows\\Storage");
+                    //ObjectQuery query = new ObjectQuery("SELECT * FROM MSFT_Disk");
+
+                    //ManagementObjectSearcher searcher =
+                    //        new ManagementObjectSearcher(scope, query);
+
+                    //ManagementObjectCollection queryCollection = searcher.Get();
+
+
                     ManagementClass cs = new ManagementClass("win32_diskdrive");
                     ManagementObjectCollection moc = cs.GetInstances();
                     if (moc.Count != 0)
@@ -798,7 +810,11 @@ namespace Computer_Support_Info
                             var type = MO.Properties["MediaType"]?.Value?.ToString();
 
                             if (type == null) continue;
-                            if (!type.Equals("fixed hard disk media", StringComparison.InvariantCultureIgnoreCase)) continue;
+                            
+                            if (!type.Equals("fixed hard disk media", StringComparison.InvariantCultureIgnoreCase)
+                                &&
+                                !type.Equals("external hard disk media", StringComparison.InvariantCultureIgnoreCase)
+                                ) continue;
 
                             DiskDrives.Add(new DiskDrive()
                             {
@@ -816,14 +832,16 @@ namespace Computer_Support_Info
                 }
                 catch { }
 
-                return new List<NameAndValue> {
-                        new NameAndValue()
-                        {
-                            Name = "-",
-                            Value = string.Join("\n", DiskDrives.Select(x => x.ToString())),
-                            Order = number
-                        }
-                    };
+                List<NameAndValue> L = new List<NameAndValue>();
+
+                DiskDrives.ForEach(x => L.Add(new NameAndValue()
+                {
+                    Name = x.Index.ToString(),
+                    Value = x.ToString(),
+                    Order = number++
+                }));
+
+                return L;
 
                 //return new List<SupportInfoElement> {
                 //    new SupportInfoElement() {
@@ -840,6 +858,8 @@ namespace Computer_Support_Info
                 // logical drives
 
                 List<LogicalVolume> L = new List<LogicalVolume>();
+
+                List<NameAndValue> nv = new List<NameAndValue>();
 
                 string drive_string = string.Empty;
 
@@ -860,14 +880,14 @@ namespace Computer_Support_Info
                 }
                 catch { }
 
-                return new List<NameAndValue> {
-                        new NameAndValue()
-                        {
-                            Name = "-",
-                            Value = string.Join("\n", L.Select(x => x.ToString())),
-                            Order = number
-                        }
-                    };
+                L.ForEach(x => nv.Add(new NameAndValue()
+                {
+                    Name = x.Name,
+                    Value = x.ToString(),
+                    Order = number++
+                }));
+
+                return nv;
             }
 
             if (sit == SupportInfotype.Network)

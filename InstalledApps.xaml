@@ -24,7 +24,10 @@
         </CollectionViewSource>        
     </Window.Resources>
     
-    <Grid x:Name="MainGrid" Margin="10">
+    <Grid x:Name="MainGrid" Margin="10"
+            materialDesign:DataGridAssist.CellPadding="4 4 4 4" 
+            materialDesign:DataGridAssist.ColumnHeaderPadding="4 4 4 4"          
+          >
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
@@ -88,6 +91,6 @@
         </DataGrid>
 
         <Button x:Name="BtnExit" Content="Schließen" Margin="25" Click="BtnExit_Click" 
-                Width="692" Grid.Row="1" VerticalAlignment="Bottom" ToolTip="Dialog schließen" />
+                Width="Auto" Grid.Row="1" VerticalAlignment="Bottom" ToolTip="Dialog schließen" />
     </Grid>
 </Window>

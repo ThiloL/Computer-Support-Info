@@ -24,7 +24,7 @@ namespace Computer_Support_Info
         {
             InitializeComponent();
 
-            this.Title += " (" + Assembly.GetExecutingAssembly().GetName().Version.ToString() + ") - Speedtest";
+            this.Title += " (" + Assembly.GetExecutingAssembly().GetName().Version.ToString() + ") - Internetgeschwindigkeit";
 
             Rect workArea = SystemParameters.WorkArea;
 

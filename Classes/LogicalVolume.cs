@@ -19,8 +19,7 @@ namespace Computer_Support_Info
         public override string ToString()
         {
 
-            return string.Format("{0} | Größe: {1} | Frei: {2}",
-                Name,
+            return string.Format("Größe: {0} | Frei: {1}",
                 TotalSpace.Bytes().Humanize("0.#"),
                 FreeSpace.Bytes().Humanize("0.#")
                 );

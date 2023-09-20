@@ -12,6 +12,8 @@
     <ApplicationIcon>MainIcon.ico</ApplicationIcon>
     <Copyright>2021-2023 | HUK-COBURG | Informatik Betrieb | SM+SV | Thilo Langbein</Copyright>
     <Version>1.4</Version>
+    <SignAssembly>False</SignAssembly>
+    <DelaySign>True</DelaySign>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -28,19 +30,23 @@
   </ItemGroup>
 
   <ItemGroup>
-    <COMReference Include="WUApiLib">
-      <VersionMinor>0</VersionMinor>
-      <VersionMajor>2</VersionMajor>
-      <Guid>b596cc9f-56e5-419e-a622-e01bb457431e</Guid>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>false</Isolated>
-      <EmbedInteropTypes>true</EmbedInteropTypes>
-    </COMReference>
+	  <COMReference Include="WUApiLib">
+		  <Guid>{B596CC9F-56E5-419E-A622-E01BB457431E}</Guid>
+		  <VersionMajor>2</VersionMajor>
+		  <VersionMinor>0</VersionMinor>
+		  <Lcid>0</Lcid>
+		  <WrapperTool>tlbimp</WrapperTool>
+		  <Isolated>False</Isolated>
+		  <EmbedInteropTypes>True</EmbedInteropTypes>
+	  </COMReference>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AForge.Video.DirectShow" Version="2.2.5" />
+    <PackageReference Include="Costura.Fody" Version="5.7.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Humanizer.Core.de" Version="2.14.1" />
     <PackageReference Include="Ipify.NET" Version="1.0.0" />
     <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />

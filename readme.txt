@@ -1,0 +1,1 @@
+﻿signtool sign /tr http://timestamp.sectigo.com /td SHA256 /fd sha256 /a Computer-Support-Info.exe

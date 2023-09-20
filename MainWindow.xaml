@@ -27,11 +27,33 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Menu Height="Auto" VerticalAlignment="Top" Grid.Row="0" Grid.ColumnSpan="2">
-            <MenuItem Header="Aktionen">
-                <MenuItem x:Name="MenuInternetSpeed" Header="Internetgeschwindigkeit messen (Laufzeit: 1-2 Minuten)" Click="MenuItem_Click"/>
-                <MenuItem Header="Windows Update-Verlauf anzeigen" Click="MenuItem_Click_1" />
-                <MenuItem Header="Installierte Apps anzeigen" Click="MenuInstalledApps" />
+        <Menu x:Name="MainMenu" Height="Auto" VerticalAlignment="Top" Grid.Row="0" Grid.ColumnSpan="2" IsEnabled="False">
+            <MenuItem x:Name="MenuInternetSpeed" ToolTip="Internetgeschwindigkeit messen (Laufzeit: 1-2 Minuten)" Click="MenuItem_Click">
+                <MenuItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Speedometer" Margin="0,0,5,0"/>
+                        <TextBlock>Internetgeschwindigkeit</TextBlock>
+                    </StackPanel>
+                </MenuItem.Header>
+            </MenuItem>
+
+
+            <MenuItem ToolTip="Windows Update-Verlauf anzeigen" Click="MenuItem_Click_1">
+                <MenuItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Download" Margin="0,0,5,0"/>
+                        <TextBlock>Windows Updates</TextBlock>
+                    </StackPanel>
+                </MenuItem.Header>
+            </MenuItem>
+
+            <MenuItem ToolTip="Installierte Apps anzeigen" Click="MenuInstalledApps">
+                <MenuItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Apps" Margin="0,0,5,0"/>
+                        <TextBlock>Installierte Apps</TextBlock>
+                    </StackPanel>                    
+                </MenuItem.Header>
             </MenuItem>
         </Menu>
 
@@ -57,9 +79,9 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.Row="2" Grid.Column="0"  Margin="15" Background="Transparent">
             <StackPanel>
 
-                <local:GridWithHeader x:Name="USER" Height="Auto" />
-                <local:GridWithHeader x:Name="OS" Height="Auto" />
-                <local:GridWithHeader x:Name="COMPUTER" Height="Auto" />
+                <local:GridWithHeader x:Name="USER" Height="Auto" Margin="0,0,0,15" />
+                <local:GridWithHeader x:Name="OS" Height="Auto" Margin="0,0,0,15" />
+                <local:GridWithHeader x:Name="COMPUTER" Height="Auto" Margin="0,0,0,15" />
                 <local:GridWithHeader x:Name="NETWORK" Height="Auto" />
 
             </StackPanel>
@@ -68,13 +90,20 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.Row="2" Grid.Column="1" Margin="15">
             <StackPanel>
 
-                <local:GridWithHeader x:Name="DISK_PHYSICAL" Height="Auto" />
-                <local:GridWithHeader x:Name="DISK_LOGICAL" Height="Auto" />
-                <local:GridWithHeader x:Name="AV_DEVICES" Height="Auto" />
+                <local:GridWithHeader x:Name="DISK_PHYSICAL" Height="Auto" Margin="0,0,0,15" />
+                <local:GridWithHeader x:Name="DISK_LOGICAL" Height="Auto" Margin="0,0,0,15"/>
+                <local:GridWithHeader x:Name="AV_DEVICES" Height="Auto" Margin="0,0,0,15"/>
                 <local:GridWithHeader x:Name="WEBCAM" Height="Auto" />
             </StackPanel>
         </ScrollViewer>
 
-        <Button x:Name="BtnExit" Content="schließen" Margin="25" Click="BtnExit_Click" FontSize="16" Width="692" Grid.Row="3" Grid.ColumnSpan="2" VerticalAlignment="Bottom" ToolTip="Anwendung beenden" />
+        <Button x:Name="BtnExit" Margin="25" Click="BtnExit_Click" 
+                FontSize="16" Width="Auto" Grid.Row="3" Grid.ColumnSpan="2" 
+                VerticalAlignment="Center" ToolTip="Anwendung beenden">
+            <StackPanel Orientation="Horizontal">
+                <materialDesign:PackIcon Kind="ExitRun" Margin="0,0,10,0"/>
+                <TextBlock> Schließen</TextBlock>
+            </StackPanel>
+        </Button>
     </Grid>
 </Window>
