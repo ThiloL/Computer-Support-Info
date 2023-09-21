@@ -256,6 +256,28 @@ namespace Computer_Support_Info
 
             if (sit == SupportInfotype.AadInfo)
             {
+                List<NameAndValue> L = new List<NameAndValue>();
+
+                string workgroup_name = string.Empty;
+                NETSETUP_JOIN_STATUS nsjs = new NETSETUP_JOIN_STATUS();
+
+                Win32Error x = NetGetJoinInformation(null, out workgroup_name, out nsjs);
+                if (x == Win32Error.NERR_Success)
+                {
+                    //
+                    if (nsjs == NETSETUP_JOIN_STATUS.NetSetupWorkgroupName)
+                    {
+                        L.Add(new NameAndValue()
+                        {
+                            Name = "Workgroup",
+                            Value = workgroup_name,
+                            Order = number++
+                        });
+                    }
+                }
+
+
+
                 DSREG_JOIN_INFO join_info = new DSREG_JOIN_INFO();
 
                 try
@@ -263,7 +285,7 @@ namespace Computer_Support_Info
                     var r = NetGetAadJoinInformation(null, out join_info);
                     if (r == HRESULT.S_OK)
                     {
-                        List<NameAndValue> L = new List<NameAndValue>();
+                        
 
                         L.Add(new NameAndValue()
                         {
@@ -286,8 +308,7 @@ namespace Computer_Support_Info
                 {
                 }
 
-
-                var x = NetGetJoinInformation()
+                
 
                 return null;
 
@@ -322,14 +343,7 @@ namespace Computer_Support_Info
                 };
 
 
-                //return new List<SupportInfoElement> { 
-                //    new SupportInfoElement() { 
-                //        Name = "Benutzername", 
-                //        Value = $"{user} {fn}", 
-                //        Number = number, 
-                //        Column = col 
-                //    } 
-                //};
+
             }
 
             if (sit == SupportInfotype.IsAdmin)
@@ -373,15 +387,6 @@ namespace Computer_Support_Info
                         }
                     };
 
-                    //return new List<SupportInfoElement> {
-                    //    new SupportInfoElement() {
-                    //        Name = "Administrative Rechte",
-                    //        Value = "JA",
-                    //        MakeBold = true,
-                    //        Number = number,
-                    //        Column = col
-                    //    }
-                    //};
                 }
                 else
 
@@ -393,27 +398,11 @@ namespace Computer_Support_Info
                         }
                     };
 
-                //return new List<SupportInfoElement> {
-                //        new SupportInfoElement() {
-                //            Name = "Administrative Rechte",
-                //            Value = "NEIN",
-                //            Number = number,
-                //            Column = col
-                //        }
-                //    };
             }
 
             if (sit == SupportInfotype.ComputerName)
             {
                 return new List<NameAndValue> { new NameAndValue() { Value = Environment.MachineName } };
-                //return new List<SupportInfoElement> {
-                //    new SupportInfoElement() {
-                //        Name = "Computername",
-                //        Value = Environment.MachineName,
-                //        Number = number,
-                //        Column = col 
-                //    }
-                //};
             }
 
 
@@ -504,14 +493,6 @@ namespace Computer_Support_Info
                         }
                     };
 
-                //return new List<SupportInfoElement> {
-                //    new SupportInfoElement() {
-                //        Name = "Hersteller",
-                //        Value = manufacturer,
-                //        Number = number,
-                //        Column = col
-                //    }
-                //};
 
             }
 
@@ -556,14 +537,7 @@ namespace Computer_Support_Info
                         }
                     };
 
-                //return new List<SupportInfoElement> {
-                //    new SupportInfoElement() {
-                //        Name = "Modell",
-                //        Value = string.Format("{0} | {1}", model, model2),
-                //        Number = number,
-                //        Column = col
-                //    }
-                //};
+
 
             }
 
@@ -594,14 +568,7 @@ namespace Computer_Support_Info
                         }
                     };
 
-                //return new List<SupportInfoElement> {
-                //    new SupportInfoElement() {
-                //        Name = "Serien-Nummer (Baseboard)",
-                //        Value = $"{serial}",
-                //        Number = number,
-                //        Column = col
-                //    }
-                //};
+
             }
 
             if (sit == SupportInfotype.SerialBios)
@@ -631,14 +598,7 @@ namespace Computer_Support_Info
                         }
                     };
 
-                //return new List<SupportInfoElement> {
-                //    new SupportInfoElement() {
-                //        Name = "Serien-Nummer (BIOS)",
-                //        Value = $"{serial}",
-                //        Number = number,
-                //        Column = col
-                //    }
-                //};
+
             }
 
             if (sit == SupportInfotype.CPU)
@@ -669,14 +629,7 @@ namespace Computer_Support_Info
                         }
                     };
 
-                //return new List<SupportInfoElement> {
-                //    new SupportInfoElement() {
-                //        Name = "CPU",
-                //        Value = cpu,
-                //        Number = number,
-                //        Column = col
-                //    }
-                //};
+
             }
 
             if (sit == SupportInfotype.Firmware)
@@ -727,24 +680,6 @@ namespace Computer_Support_Info
                     Value = bios_datetime.ToString("dd.MM.yyyy"),
                     Order = number++
                 });
-
-                //F.Add(new SupportInfoElement()
-                //{
-                //    Name = "-Version",
-                //    Value = bios_version,
-                //    Number = number,
-                //    SubNumber = N++,
-                //    Column = col
-                //});
-
-                //F.Add(new SupportInfoElement()
-                //{
-                //    Name = "-Datum",
-                //    Value = bios_datetime.ToString("dd.MM.yyyy"),
-                //    Number = number,
-                //    SubNumber = N++,
-                //    Column = col
-                //});
 
                 return F;
 
