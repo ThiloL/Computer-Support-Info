@@ -286,6 +286,9 @@ namespace Computer_Support_Info
                 {
                 }
 
+
+                var x = NetGetJoinInformation()
+
                 return null;
 
                 
@@ -944,7 +947,7 @@ namespace Computer_Support_Info
                 if (!string.IsNullOrEmpty(ip))
                     C.Add(new NameAndValue()
                     {
-                        Name = "IP-Adresse(privat)",
+                        Name = "IP-Adresse (privat)",
                         Value = ip,
                         Order = number++
                     });
