@@ -27,6 +27,7 @@ using static Vanara.PInvoke.NetApi32;
 using WindowsDisplayAPI;
 using Path = System.IO.Path;
 using Vanara.Extensions;
+using System.Runtime.InteropServices;
 
 namespace Computer_Support_Info
 {
@@ -1073,6 +1074,13 @@ namespace Computer_Support_Info
 
             if (sit == SupportInfotype.AudioOutDevices)
             {
+                //var x2 = Vanara.PInvoke.WinMm.waveOutGetNumDevs();
+
+                //WinMm.WAVEINCAPS caps = new WinMm.WAVEINCAPS();
+
+                //var dev = Vanara.PInvoke.WinMm.waveInGetDevCaps(0, out caps, (uint)Marshal.SizeOf(typeof(WinMm.WAVEINCAPS)));
+
+
                 MMDeviceEnumerator enumerator = new MMDeviceEnumerator();
                 
 
@@ -1088,6 +1096,9 @@ namespace Computer_Support_Info
                 {
                     foreach(MMDevice d in out_dev)
                     {
+
+
+
                         audio_out.Add(new AudioDevice()
                         {
                             Name  = d.FriendlyName,
