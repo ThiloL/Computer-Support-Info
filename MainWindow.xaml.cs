@@ -44,7 +44,7 @@ namespace Computer_Support_Info
 
         bool IsConnectedToInternet = false;
 
-
+        GridWithHeaderData Session = new GridWithHeaderData("Sitzung");
         GridWithHeaderData User = new GridWithHeaderData("Benutzer/Entra ID");
         GridWithHeaderData Os = new GridWithHeaderData("Betriebssystem");
         GridWithHeaderData Computer = new GridWithHeaderData("Computer");
@@ -60,6 +60,7 @@ namespace Computer_Support_Info
 
             InitializeComponent();
 
+            SESSION.DataContext = Session;
             USER.DataContext = User;
             OS.DataContext = Os;
             COMPUTER.DataContext = Computer;
@@ -151,7 +152,9 @@ namespace Computer_Support_Info
             int no = 1;
 
             List<Taskhelper> th = new List<Taskhelper>();
-            
+
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.BootAndSessionInfo, number = Add10(ref no), col = 1, gwhd = Session });
+
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.UserName, number = Add10(ref no), col = 1, gwhd = User, IsPlainText = true });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.IsAdmin, number = Add10(ref no), col = 1, gwhd = User });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.AadInfo, number = Add10(ref no), col = 1, gwhd = User });
@@ -254,6 +257,39 @@ namespace Computer_Support_Info
 
         private List<NameAndValue> LoadData(SupportInfotype sit, int number, int col, string number_prefix = "")
         {
+            if (sit == SupportInfotype.BootAndSessionInfo)
+            {
+                List<NameAndValue> L = new List<NameAndValue>();
+
+                var bootTime = new ManagementObjectSearcher("SELECT LastBootUpTime FROM Win32_OperatingSystem").Get()
+                    .OfType<ManagementObject>()
+                    .First()
+                    .Properties["LastBootUpTime"].Value;
+
+                DateTime LastBootTime = ManagementDateTimeConverter.ToDateTime(bootTime.ToString());
+
+                string strLastBootTime = LastBootTime.ToString("dd.MM.yyyy HH:mm");
+
+                TimeSpan DurationSinceLastBoot = DateTime.Now - LastBootTime;
+
+                L.Add(new NameAndValue()
+                {
+                    Name = "Computerstart vor",
+                    Value = $"{DurationSinceLastBoot.Humanize()} [{strLastBootTime}]",
+                    Order = number++
+                });
+
+                var x = new ManagementObjectSearcher("SELECT * FROM Win32_LogonSession WHERE LogonType = 2").Get()
+                    .OfType<ManagementObject>();
+
+
+                var id = System.Diagnostics.Process.GetCurrentProcess().SessionId;
+
+
+
+                return L;
+            }
+
 
             if (sit == SupportInfotype.AadInfo)
             {

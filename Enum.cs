@@ -30,6 +30,7 @@ namespace Computer_Support_Info
         GraphicsCard,
         Display,
         Bitlocker,
-        AadInfo
+        AadInfo,
+        BootAndSessionInfo
     }
 }
