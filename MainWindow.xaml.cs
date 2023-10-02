@@ -24,6 +24,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Vanara.PInvoke;
 using static Vanara.PInvoke.NetApi32;
+using static Vanara.PInvoke.WTSApi32;
+using static Vanara.PInvoke.Kernel32;
 using WindowsDisplayAPI;
 using Path = System.IO.Path;
 using Vanara.Extensions;
@@ -279,13 +281,21 @@ namespace Computer_Support_Info
                     Order = number++
                 });
 
-                var x = new ManagementObjectSearcher("SELECT * FROM Win32_LogonSession WHERE LogonType = 2").Get()
-                    .OfType<ManagementObject>();
+                uint bytesreturned;
+                SafeWTSMemoryHandle sh;
+
+                bool result = WTSQuerySessionInformation(WTS_CURRENT_SERVER_HANDLE, WTS_CURRENT_SESSION, WTS_INFO_CLASS.WTSLogonTime, out sh, out bytesreturned);
+
+                //var x = new ManagementObjectSearcher("SELECT * FROM Win32_LogonSession WHERE LogonType = 2").Get()
+                //    .OfType<ManagementObject>();
 
 
-                var id = System.Diagnostics.Process.GetCurrentProcess().SessionId;
+                //var id = System.Diagnostics.Process.GetCurrentProcess().SessionId;
 
-
+                if (!result)
+                {
+                    var x = GetLastError();
+                }
 
                 return L;
             }

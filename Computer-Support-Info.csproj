@@ -54,12 +54,14 @@
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
     <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="System.Text.Json" Version="7.0.3" />
+    <PackageReference Include="Vanara.PInvoke.Kernel32" Version="3.4.16" />
     <PackageReference Include="Vanara.PInvoke.Multimedia" Version="3.4.16" />
     <PackageReference Include="Vanara.PInvoke.NetApi32" Version="3.4.16" />
     <PackageReference Include="Vanara.PInvoke.Security" Version="3.4.16" />
     <PackageReference Include="Vanara.PInvoke.Shared" Version="3.4.16" />
     <PackageReference Include="Vanara.PInvoke.User32" Version="3.4.16" />
     <PackageReference Include="Vanara.PInvoke.WinINet" Version="3.4.16" />
+    <PackageReference Include="Vanara.PInvoke.WTSApi32" Version="3.4.16" />
     <PackageReference Include="WindowsDisplayAPI" Version="1.3.0.13" />
   </ItemGroup>
 
