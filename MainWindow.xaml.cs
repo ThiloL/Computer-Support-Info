@@ -26,10 +26,15 @@ using Vanara.PInvoke;
 using static Vanara.PInvoke.NetApi32;
 using static Vanara.PInvoke.WTSApi32;
 using static Vanara.PInvoke.Kernel32;
+using static Vanara.PInvoke.Secur32;
 using WindowsDisplayAPI;
 using Path = System.IO.Path;
 using Vanara.Extensions;
 using System.Runtime.InteropServices;
+using static Vanara.PInvoke.AdvApi32;
+
+using Cassia;
+using Cassia.Impl;
 
 namespace Computer_Support_Info
 {
@@ -272,30 +277,59 @@ namespace Computer_Support_Info
 
                 string strLastBootTime = LastBootTime.ToString("dd.MM.yyyy HH:mm");
 
-                TimeSpan DurationSinceLastBoot = DateTime.Now - LastBootTime;
+                //TimeSpan DurationSinceLastBoot = DateTime.Now - LastBootTime;
 
                 L.Add(new NameAndValue()
                 {
-                    Name = "Computerstart vor",
-                    Value = $"{DurationSinceLastBoot.Humanize()} [{strLastBootTime}]",
+                    Name = "Computerstart",
+                    Value = $"{LastBootTime.Humanize()} | {strLastBootTime}",
                     Order = number++
                 });
 
-                uint bytesreturned;
-                SafeWTSMemoryHandle sh;
+                var c_user = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
 
-                bool result = WTSQuerySessionInformation(WTS_CURRENT_SERVER_HANDLE, WTS_CURRENT_SESSION, WTS_INFO_CLASS.WTSLogonTime, out sh, out bytesreturned);
-
-                //var x = new ManagementObjectSearcher("SELECT * FROM Win32_LogonSession WHERE LogonType = 2").Get()
-                //    .OfType<ManagementObject>();
-
-
-                //var id = System.Diagnostics.Process.GetCurrentProcess().SessionId;
-
-                if (!result)
+                ITerminalServicesManager m = new TerminalServicesManager();
+                using (ITerminalServer server = m.GetLocalServer())
                 {
-                    var x = GetLastError();
+                    server.Open();
+
+                    foreach (TerminalServicesSession t_sess in server.GetSessions())
+                    {
+                        if (t_sess == null) continue;
+                        if (t_sess.UserAccount == null) continue;
+
+                        if (t_sess.UserAccount.Value.Equals(c_user, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            DateTime userlogin = (DateTime) t_sess.LoginTime;
+
+                            string StrLoginTime = userlogin.ToString("dd.MM.yyyy HH:mm");
+
+                            L.Add(new NameAndValue()
+                            {
+                                Name = "Anmeldung seit",
+                                Value = $"{userlogin.Humanize()} | {StrLoginTime}",
+                                Order = number++
+                            });
+                        }
+                    }
                 }
+
+                //try
+                //{
+                //    SYSTEM_POWER_STATUS sps = new SYSTEM_POWER_STATUS();
+                //    GetSystemPowerStatus(out sps);
+                //    DateTime LastWakeup = DateTime.Now - TimeSpan.FromSeconds(sps.BatteryLifeTime);
+
+                //    string StrLastWakeup = LastWakeup.ToString("dd.MM.yyyy HH:mm");
+
+                //    L.Add(new NameAndValue()
+                //    {
+                //        Name = "Compuer aktiv ",
+                //        Value = $"{LastWakeup.Humanize()} | {StrLastWakeup}",
+                //        Order = number++
+                //    });
+                //}
+                //catch { }
 
                 return L;
             }
