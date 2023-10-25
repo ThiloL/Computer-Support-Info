@@ -31,6 +31,8 @@ namespace Computer_Support_Info
         Display,
         Bitlocker,
         AadInfo,
-        BootAndSessionInfo
+        BootAndSessionInfo,
+        SecureBoot,
+        BiosOrUefi
     }
 }

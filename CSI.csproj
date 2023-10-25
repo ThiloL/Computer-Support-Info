@@ -9,7 +9,7 @@
 
   <PropertyGroup>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
-    <ApplicationIcon>MainIcon.ico</ApplicationIcon>
+    <ApplicationIcon>CSI.ico</ApplicationIcon>
     <Copyright>2021-2023 | HUK-COBURG | Informatik Betrieb | SM+SV | Thilo Langbein</Copyright>
     <Version>1.4</Version>
     <SignAssembly>False</SignAssembly>
@@ -77,6 +77,7 @@
 
   <ItemGroup>
     <Resource Include="MainIcon.ico" />
+    <Content Include="CSI.ico" />
     <Content Include="speedtest.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

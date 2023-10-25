@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Computer_Support_Info"
         mc:Ignorable="d"
         Title="Computer-Support-Info" Height="650" Width="660"  
-        WindowStartupLocation="CenterScreen" MinWidth="800" MinHeight="650" FontSize="13" Closing="Window_Closing"
+        WindowStartupLocation="CenterScreen" MinWidth="800" MinHeight="650" Closing="Window_Closing"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
@@ -17,8 +17,9 @@
 
     <Grid x:Name="MainGrid">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*" />
-            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="29*" />
+            <ColumnDefinition Width="371*"/>
+            <ColumnDefinition Width="400*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -27,7 +28,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Menu x:Name="MainMenu" Height="Auto" VerticalAlignment="Top" Grid.Row="0" Grid.ColumnSpan="2" IsEnabled="False">
+        <Menu x:Name="MainMenu" Height="Auto" VerticalAlignment="Top" Grid.Row="0" Grid.ColumnSpan="3" IsEnabled="False">
             <MenuItem x:Name="MenuInternetSpeed" ToolTip="Internetgeschwindigkeit messen (Laufzeit: 1-2 Minuten)" Click="MenuItem_Click">
                 <MenuItem.Header>
                     <StackPanel Orientation="Horizontal">
@@ -52,12 +53,12 @@
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon Kind="Apps" Margin="0,0,5,0"/>
                         <TextBlock>Installierte Apps</TextBlock>
-                    </StackPanel>                    
+                    </StackPanel>
                 </MenuItem.Header>
             </MenuItem>
         </Menu>
 
-        <DockPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Background="Black">
+        <DockPanel Grid.Column="0" Grid.ColumnSpan="3" Background="Black" Margin="0,48,0,48" Grid.RowSpan="2">
             <StackPanel Width="Auto" Margin="0,0,50,0">
                 <Label x:Name="ComputerNameLabel"  Padding="20,20,0,0" Content="Computername" Foreground="White" FontSize="10"  />
                 <Label x:Name="ComputerName"  Padding="20,0,0,20" Content="{Binding Path=ComputerName, UpdateSourceTrigger=PropertyChanged}" Foreground="White" FontWeight="Bold" FontSize="24"  />
@@ -72,23 +73,22 @@
             </StackPanel>
         </DockPanel>
 
-        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
-            
-        </StackPanel>
+        <StackPanel Grid.Column="0" Grid.ColumnSpan="3" Margin="0,48,0,48" Grid.RowSpan="2"/>
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.Row="2" Grid.Column="0"  Margin="15" Background="Transparent">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.Row="1" Grid.Column="0"  Margin="15,19,15,15" Background="Transparent" Grid.ColumnSpan="2" Grid.RowSpan="2">
             <StackPanel>
 
                 <local:GridWithHeader x:Name="SESSION" Height="Auto" Margin="0,0,0,15" />
                 <local:GridWithHeader x:Name="USER" Height="Auto" Margin="0,0,0,15" />
                 <local:GridWithHeader x:Name="OS" Height="Auto" Margin="0,0,0,15" />
                 <local:GridWithHeader x:Name="COMPUTER" Height="Auto" Margin="0,0,0,15" />
-                <local:GridWithHeader x:Name="NETWORK" Height="Auto" />
+                <local:GridWithHeader x:Name="NETWORK" Height="Auto" Margin="0,0,0,15" />
+                <local:GridWithHeader x:Name="SECURITY" Height="Auto" />
 
             </StackPanel>
         </ScrollViewer>
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.Row="2" Grid.Column="1" Margin="15">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.Row="1" Grid.Column="2" Margin="15,19,15,15" Grid.RowSpan="2">
             <StackPanel>
 
                 <local:GridWithHeader x:Name="DISK_PHYSICAL" Height="Auto" Margin="0,0,0,15" />
@@ -98,8 +98,8 @@
             </StackPanel>
         </ScrollViewer>
 
-        <Button x:Name="BtnExit" Margin="25" Click="BtnExit_Click" 
-                FontSize="16" Width="Auto" Grid.Row="3" Grid.ColumnSpan="2" 
+        <Button x:Name="BtnExit" Margin="25,0,25,0" Click="BtnExit_Click" 
+                FontSize="16" Width="Auto" Grid.Row="3" Grid.ColumnSpan="3" 
                 VerticalAlignment="Center" ToolTip="Anwendung beenden">
             <StackPanel Orientation="Horizontal">
                 <materialDesign:PackIcon Kind="ExitRun" Margin="0,0,10,0"/>

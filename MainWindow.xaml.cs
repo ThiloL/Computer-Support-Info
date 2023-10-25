@@ -60,6 +60,7 @@ namespace Computer_Support_Info
         GridWithHeaderData DiskL = new GridWithHeaderData("Laufwerke (logisch)");
         GridWithHeaderData AV = new GridWithHeaderData("Geräte");
         GridWithHeaderData Webcam = new GridWithHeaderData("Webcam");
+        GridWithHeaderData Security = new GridWithHeaderData("Sicherheit");
 
         public MainWindow()
         {
@@ -76,6 +77,7 @@ namespace Computer_Support_Info
             NETWORK.DataContext = Network;
             AV_DEVICES.DataContext = AV;
             WEBCAM.DataContext = Webcam;
+            SECURITY.DataContext = Security;
 
             cts = new CancellationTokenSource();
             po = new ParallelOptions() { CancellationToken = cts.Token, MaxDegreeOfParallelism = System.Environment.ProcessorCount };
@@ -184,7 +186,8 @@ namespace Computer_Support_Info
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.Network, number = Add10(ref no), col = 1, gwhd = Network });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.Ping, number = Add10(ref no), col = 1, gwhd = Network });
 
-            //th.Add(new Taskhelper() { support_info_type = SupportInfotype.Bitlocker, number = no++, col = 1 });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.Bitlocker, number = Add10(ref no), col = 1, gwhd = Security });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.SecureBoot, number = Add10(ref no), col = 1, gwhd = Security });
 
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.GraphicsCard, number = Add10(ref no), col = 2, gwhd = AV });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.Display, number = Add10(ref no), col = 2, gwhd = AV });
@@ -264,7 +267,23 @@ namespace Computer_Support_Info
 
         private List<NameAndValue> LoadData(SupportInfotype sit, int number, int col, string number_prefix = "")
         {
-            if (sit == SupportInfotype.BootAndSessionInfo)
+            if (sit == SupportInfotype.SecureBoot)
+            {
+                List<NameAndValue> L = new List<NameAndValue>();
+
+                var secure_boot_enabled = Microsoft.Win32.Registry.LocalMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\SecureBoot\\State")?.GetValue("UEFISecureBootEnabled");
+
+                L.Add(new NameAndValue()
+                {
+                    Name = "Secure-Boot",
+                    Value = (secure_boot_enabled == null || (int)secure_boot_enabled==0) ? "nicht aktiv" : "aktiv" ,
+                    Order = number++
+                });
+
+                return L;
+            }
+
+                if (sit == SupportInfotype.BootAndSessionInfo)
             {
                 List<NameAndValue> L = new List<NameAndValue>();
 
@@ -306,7 +325,7 @@ namespace Computer_Support_Info
 
                             L.Add(new NameAndValue()
                             {
-                                Name = "Anmeldung seit",
+                                Name = "Benutzer-Anmeldung",
                                 Value = $"{userlogin.Humanize()} | {StrLoginTime}",
                                 Order = number++
                             });

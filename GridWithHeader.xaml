@@ -48,7 +48,7 @@
             CanUserResizeRows="False"
             Grid.Row="1"
             IsReadOnly="True"
-            materialDesign:DataGridAssist.CellPadding="4 4 4 4" 
+            materialDesign:DataGridAssist.CellPadding="4 2 4 4" 
             materialDesign:DataGridAssist.ColumnHeaderPadding="4 4 4 4"
             Loaded="UserGrid_Loaded" 
             SizeChanged="UserGrid_SizeChanged"
