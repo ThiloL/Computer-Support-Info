@@ -37,7 +37,7 @@ namespace Computer_Support_Info
             Rect workArea = SystemParameters.WorkArea;
 
             this.Height = workArea.Height / 1.25;
-            this.Width = workArea.Width / 1.25;
+            this.Width = workArea.Width / 2;
 
             this.Left = (workArea.Width - this.Width) / 2 + workArea.Left;
             this.Top = (workArea.Height - this.Height) / 2 + workArea.Top;

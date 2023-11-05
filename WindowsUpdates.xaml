@@ -13,7 +13,7 @@
         TextElement.FontSize="14"
         FontFamily="{materialDesign:MaterialDesignFont}" 
         >
-    <Grid x:Name="MainGrid" Margin="10">
+    <Grid x:Name="MainGrid" Margin="20">
 
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -31,10 +31,6 @@
                 <DataGridTextColumn Header="Kategorie" Binding="{Binding Category}" />
             </DataGrid.Columns>
 
-            <!--<DataGrid.HorizontalGridLinesBrush>
-                <SolidColorBrush Color="#25000000"/>
-            </DataGrid.HorizontalGridLinesBrush>-->
-
             <DataGrid.Resources>
                 <Style TargetType="{x:Type DataGridRow}">
                     <Style.Triggers>
@@ -46,7 +42,13 @@
             </DataGrid.Resources>
         </DataGrid>
 
-        <Button x:Name="BtnExit" Content="Schließen" Margin="25" Click="BtnExit_Click" 
-                Width="Auto" Grid.Row="1" VerticalAlignment="Bottom" ToolTip="Dialog schließen" />
+        <Button x:Name="BtnExit" Margin="25" Click="BtnExit_Click"
+                Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                Width="Auto" Grid.Row="1" VerticalAlignment="Bottom" ToolTip="Dialog schließen">
+            <StackPanel Orientation="Horizontal">
+                <materialDesign:PackIcon Kind="Close" Margin="0,0,10,0"/>
+                <TextBlock>Schließen</TextBlock>
+            </StackPanel>
+        </Button>
     </Grid>
 </Window>

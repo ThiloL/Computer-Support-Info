@@ -1469,6 +1469,11 @@ namespace Computer_Support_Info
         {
             // Speedtest
 
+            Speedtest sp = new Speedtest();
+            sp.ShowDialog();
+
+            return;
+
             try
             {
                 var full_exe_path = System.Reflection.Assembly.GetEntryAssembly().Location;

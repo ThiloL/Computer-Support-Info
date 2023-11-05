@@ -98,7 +98,7 @@
             </StackPanel>
         </ScrollViewer>
 
-        <Button x:Name="BtnExit" Margin="25,0,25,0" Click="BtnExit_Click" 
+        <Button x:Name="BtnExit" Margin="25" Click="BtnExit_Click" 
                 FontSize="16" Width="Auto" Grid.Row="3" Grid.ColumnSpan="3" 
                 VerticalAlignment="Center" ToolTip="Anwendung beenden">
             <StackPanel Orientation="Horizontal">

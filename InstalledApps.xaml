@@ -24,19 +24,17 @@
         </CollectionViewSource>        
     </Window.Resources>
     
-    <Grid x:Name="MainGrid" Margin="10"
-            materialDesign:DataGridAssist.CellPadding="4 4 4 4" 
-            materialDesign:DataGridAssist.ColumnHeaderPadding="4 4 4 4"          
-          >
+    <Grid x:Name="MainGrid" Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!--ItemsSource="{Binding Path=WindowsUpdatesData}"-->
         <DataGrid x:Name="InstalledAppsGrid" Height="Auto"  IsSynchronizedWithCurrentItem="True" AutoGenerateColumns="False" Grid.Row="0" 
                   ItemsSource="{Binding Source={StaticResource SortedList}}" IsReadOnly="True"
-                            Margin="5,5,5,5" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
+                              materialDesign:DataGridAssist.CellPadding="4 4 4 4" 
+            materialDesign:DataGridAssist.ColumnHeaderPadding="4 4 4 4"      
+                            GridLinesVisibility="Horizontal" RowHeaderWidth="0">
 
             <!--<DataGrid.CellStyle>
                 <Style TargetType="{x:Type DataGridCell}">
@@ -90,7 +88,13 @@
             </DataGrid.Resources>
         </DataGrid>
 
-        <Button x:Name="BtnExit" Content="Schließen" Margin="25" Click="BtnExit_Click" 
-                Width="Auto" Grid.Row="1" VerticalAlignment="Bottom" ToolTip="Dialog schließen" />
+        <Button x:Name="BtnExit" Margin="25" Click="BtnExit_Click" 
+                Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                Width="Auto" Grid.Row="1" VerticalAlignment="Bottom" ToolTip="Dialog schließen">
+            <StackPanel Orientation="Horizontal">
+                <materialDesign:PackIcon Kind="Close" Margin="0,0,10,0"/>
+                <TextBlock>Schließen</TextBlock>
+            </StackPanel>
+        </Button>
     </Grid>
 </Window>
