@@ -27,11 +27,12 @@ using static Vanara.PInvoke.NetApi32;
 using static Vanara.PInvoke.WTSApi32;
 using static Vanara.PInvoke.Kernel32;
 using static Vanara.PInvoke.Secur32;
+using static Vanara.PInvoke.AdvApi32;
 using WindowsDisplayAPI;
 using Path = System.IO.Path;
 using Vanara.Extensions;
 using System.Runtime.InteropServices;
-using static Vanara.PInvoke.AdvApi32;
+
 
 using Cassia;
 using Cassia.Impl;
@@ -188,6 +189,7 @@ namespace Computer_Support_Info
 
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.Bitlocker, number = Add10(ref no), col = 1, gwhd = Security });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.SecureBoot, number = Add10(ref no), col = 1, gwhd = Security });
+            th.Add(new Taskhelper() { support_info_type = SupportInfotype.BiosOrUefi, number = Add10(ref no), col = 1, gwhd = Security });
 
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.GraphicsCard, number = Add10(ref no), col = 2, gwhd = AV });
             th.Add(new Taskhelper() { support_info_type = SupportInfotype.Display, number = Add10(ref no), col = 2, gwhd = AV });
@@ -267,6 +269,35 @@ namespace Computer_Support_Info
 
         private List<NameAndValue> LoadData(SupportInfotype sit, int number, int col, string number_prefix = "")
         {
+            if (sit == SupportInfotype.BiosOrUefi)
+            {
+                List<NameAndValue> L = new List<NameAndValue>();
+
+                var x = GetFirmwareEnvironmentVariable("", "{00000000-0000-0000-0000-000000000000}", IntPtr.Zero, 0);
+
+                if (Marshal.GetLastWin32Error() == 1)
+                {
+                    L.Add(new NameAndValue()
+                    {
+                        Name = "Firmware-Modus",
+                        Value = "BIOS",
+                        Order = number++
+                    });
+                } else
+                {
+                    L.Add(new NameAndValue()
+                    {
+                        Name = "Firmware-Modus",
+                        Value = "UEFI",
+                        Order = number++
+                    });
+
+                }
+
+                return L;
+            }
+
+
             if (sit == SupportInfotype.SecureBoot)
             {
                 List<NameAndValue> L = new List<NameAndValue>();

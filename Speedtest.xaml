@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Computer_Support_Info"
         mc:Ignorable="d"
-        Title="Speedtest" Height="450" Width="550"
+        Title="Computer-Support-Info" Height="450" Width="550"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:busyIndicator="https://github.com/moh3ngolshani/BusyIndicator"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
